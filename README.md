@@ -9,6 +9,7 @@ This is the first thing I have ever compiled in to something I could share, and 
 
 I relied HEAVILY on ChatGPT to get me across both the start AND finish line, and would welcome human advice if there's something I messed up on.
 
+Download links for both the installer and standalone version are on the Releases page (right side of screen).
 
 ***Nerdy notes:
 
