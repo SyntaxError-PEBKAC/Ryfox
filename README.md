@@ -1,4 +1,4 @@
-Ryfox for Windows 11
+ducksteps for Windows 11
 
 Zen 5 compiled web browser for AMD 9950X3D (May work on similar 9000 series CPUs).
 
@@ -14,7 +14,7 @@ Download links for both the installer and standalone version are on the Releases
 
 **Tested on AMD 9950X3D CPU, RTX 4080 Super GPU, 48GB DDR5, Windows 11
 
-**Ryfox 1.0.0 benchmarks
+**Ryfox (ducksteps) 1.0.0 benchmarks
 - Speedometer 3.1: 35.5
 - Jetstream 2.2: 336.123
 - MotionMark 1.3.1 (1080p 60hz RTX 4080 Super): 2136.29
@@ -53,15 +53,14 @@ Download links for both the installer and standalone version are on the Releases
 - Firefox Nightly(64-bit)
 
 **Todo (Though I'm just happy/relieved/anxious it runs at all at the moment lol!):
-- Rename Nightly to Ryfox.
-- Compress EXE further with 7zip commands.
+- Rename Nightly to ducksteps.
+- Compress EXE further cause I'm a nerd.
 - Create icon image.
 - Customize installer EXE text and images.
 - Move source codebase to REFS storage on my PC for faster builds.
-- Figure out a release schedule if there is any interest in the project.
-- Reconsider nightly codebase for more stable, less frequent updates (Base install, ESR, or Rapid Release).
-- Automate build, compression, & upload process.
-- Make the fox go even faster?
+- Change codebase to Extended Support Release for a monthly release schedule.
+- Automate the build, compression, & upload process.
+- Make the duck waddle even faster?
 
 **Legal
-- Ryfox is an unofficial build. “Firefox” and Mozilla logos are Mozilla trademarks; Ryfox is not affiliated with or endorsed by Mozilla.
+- ducksteps is an unofficial build. “Firefox” and Mozilla logos are Mozilla trademarks; ducksteps is not affiliated with or endorsed by Mozilla.
