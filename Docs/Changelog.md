@@ -4,6 +4,41 @@ All releases of ducksteps. Newest first.
 
 ---
 
+## [140.11.0] — 19/May/2026
+
+⛐ It's the "stay in the sandbox" release! 
+
+🔄 Updated to Firefox ESR 140.11.0.
+
+🛡️ Addressed 15 CVEs from Mozilla Foundation Security Advisory 2026-48 (May 19, 2026). No critical issues, no active exploitation reported.
+
+High severity:
+
+    CVE-2026-8401 — sandbox escape via the Profile Backup component
+    CVE-2026-8947 — use-after-free in WebIDL bindings
+    CVE-2026-8388 — out-of-bounds read in the JIT compiler
+    CVE-2026-8391 — issue in the JavaScript engine
+    CVE-2026-8946 — out-of-bounds read in Web Codecs
+
+Moderate severity:
+
+    CVE-2026-8953 — sandbox escape via use-after-free in Accessibility APIs
+    CVE-2026-8958 — info disclosure + sandbox escape in process sandboxing
+    CVE-2026-8959 — sandbox escape via out-of-bounds read in Win32 widgets
+    CVE-2026-8950 — same-origin policy bypass in HTTP networking
+    CVE-2026-8949 — integer overflow in Win32 widgets
+    CVE-2026-8956 — integer overflow in JAR networking
+    CVE-2026-8955 — privilege escalation in DOM Workers
+    CVE-2026-8957 — privilege escalation in Enterprise Policies
+    CVE-2026-8954 — out-of-bounds read in audio/video processing
+
+Low severity:
+
+    CVE-2026-8961 — spoofing issue in Form Autofill
+
+
+---
+
 ## [140.10.2] — 10/May/2026
 
 ⛐ It's the "patch Tuesday came early" release!
