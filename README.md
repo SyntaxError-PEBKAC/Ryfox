@@ -27,7 +27,7 @@ Tested on AMD Ryzen 9950X3D / 48GB DDR5 / RTX 4080 Super / Windows 11 25H2.
 
 ducksteps renders animations and scrolling **~10% faster** than stock Firefox on the same hardware, and handles real-world JavaScript **~2% faster**. It scores ~2% lower on short synthetic microbenchmarks — that's a known, deliberate tradeoff from tuning PGO for real browsing instead of benchmark loops.
 
-Full numbers, methodology, and per-test breakdowns: [PerformanceBenchmark.md](Docs/PerformanceBenchmark).
+Full numbers, methodology, and per-test breakdowns: [PerformanceBenchmark.md](Docs/PerformanceBenchmark.md).
 
 ---
 📋 Requirements
