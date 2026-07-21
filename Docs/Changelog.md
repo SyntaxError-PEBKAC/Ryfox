@@ -4,6 +4,54 @@ All releases of ducksteps. Newest first.
 
 ---
 
+## [140.12.0] — 17/June/2026
+
+⛐ It's the "twenty-nine CVEs but who's counting" release!
+
+🔄  Updated to Firefox ESR 140.12.0.
+
+🛡️  Addressed 29 CVEs from Mozilla Foundation Security Advisory 2026-58 (June 16, 2026). No critical severity, no active exploitation reported — though this is the heaviest patch cycle in the 140.x series so far: 12 high-severity patches including four separate sandbox escapes and a JIT miscompilation, 15 moderate, 2 low.
+
+**High severity:**
+
+- CVE-2026-12289 — privilege escalation in the Graphics: WebRender component
+- CVE-2026-12290 — memory safety bug in Firefox ESR 140.12
+- CVE-2026-12291 — use-after-free in the Networking: HTTP component
+- CVE-2026-12292 — incorrect boundary conditions in the Web Audio component
+- CVE-2026-12294 — sandbox escape in the DOM: Workers component
+- CVE-2026-12295 — sandbox escape in the DOM: Navigation component
+- CVE-2026-12296 — sandbox escape in the Security: Process Sandboxing component
+- CVE-2026-12297 — sandbox escape via incorrect boundary conditions in the Networking component
+- CVE-2026-12298 — memory safety bug in Firefox ESR 140.12
+- CVE-2026-12299 — JIT miscompilation in the DOM: Core & HTML component
+- CVE-2026-12328 — memory safety bugs shared across ESR 115.37, ESR 140.12, and Firefox 152 (evidence of memory corruption, plausible RCE potential)
+- CVE-2026-12329 — memory safety bug in Firefox ESR 140.12
+
+**Moderate severity:**
+
+- CVE-2026-12302 — mitigation bypass in the DOM: Security component
+- CVE-2026-12304 — same-origin policy bypass in the Networking: Cookies component
+- CVE-2026-12305 — memory safety bug in Firefox ESR 140.12
+- CVE-2026-12306 — memory safety bug in Firefox ESR 140.12
+- CVE-2026-12307 — memory safety bug in Firefox ESR 140.12
+- CVE-2026-12308 — memory safety bug in Firefox ESR 140.12
+- CVE-2026-12309 — memory safety bug in Firefox ESR 140.12
+- CVE-2026-12310 — memory safety bug in Firefox ESR 140.12
+- CVE-2026-12311 — information disclosure + sandbox escape in the Security: Process Sandboxing component
+- CVE-2026-12312 — memory safety bug in Firefox ESR 140.12
+- CVE-2026-12313 — information disclosure + sandbox escape in the Security: Process Sandboxing component
+- CVE-2026-12314 — memory safety bug in Firefox ESR 140.12
+- CVE-2026-12315 — mitigation bypass in the DOM: Security component
+- CVE-2026-12327 — memory safety bugs shared across ESR 140.12 and Firefox 152 (evidence of memory corruption, plausible RCE potential)
+- CVE-2026-12330 — incorrect boundary conditions in the Internationalization component
+
+**Low severity:**
+
+- CVE-2026-12324 — incorrect boundary conditions in the Graphics: CanvasWebGL component
+- CVE-2026-12325 — denial-of-service in the Graphics: ImageLib component
+
+---
+
 ## [140.11.0] — 19/May/2026
 
 ⛐ It's the "stay in the sandbox" release! 
