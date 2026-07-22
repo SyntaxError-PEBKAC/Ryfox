@@ -4,6 +4,60 @@ All releases of ducksteps. Newest first.
 
 ---
 
+## [140.13.0] — 21/July/2026
+
+⛐ It's the "exploit code's already out there" release!
+
+🔄 Updated to Firefox ESR 140.13.0. Pure upstream sync — no ducksteps-side changes this round.
+
+🛡️ Addressed 32 CVEs from Mozilla Foundation Security Advisory 2026-70 (July 21, 2026). Two critical this cycle — a WebAssembly invalid pointer and a DOM Navigation site isolation bypass — both with public exploit code, though Mozilla reports no confirmed in-the-wild attacks yet. Also 16 high-severity patches (three sandbox escapes, two JIT miscompilations, four WebAssembly-related bugs), 13 moderate, 1 low. Heaviest cycle since 140.12.0's 29.
+
+Critical severity:
+
+- [CVE-2026-15718](https://www.cve.org/CVERecord?id=CVE-2026-15718) — invalid pointer in the JavaScript: WebAssembly component (public exploit code exists)
+- [CVE-2026-15719](https://www.cve.org/CVERecord?id=CVE-2026-15719) — site isolation issue in the DOM: Navigation component (public exploit code exists)
+
+High severity:
+
+- [CVE-2026-16349](https://www.cve.org/CVERecord?id=CVE-2026-16349) — same-origin policy bypass in the DOM: Navigation component
+- [CVE-2026-16350](https://www.cve.org/CVERecord?id=CVE-2026-16350) — incorrect boundary conditions in the Audio/Video: cubeb component
+- [CVE-2026-16351](https://www.cve.org/CVERecord?id=CVE-2026-16351) — sandbox escape via use-after-free in the DOM: Navigation component
+- [CVE-2026-16352](https://www.cve.org/CVERecord?id=CVE-2026-16352) — sandbox escape via use-after-free in the Disability Access APIs component
+- [CVE-2026-16353](https://www.cve.org/CVERecord?id=CVE-2026-16353) — invalid pointer in the DOM: Bindings (WebIDL) component
+- [CVE-2026-16354](https://www.cve.org/CVERecord?id=CVE-2026-16354) — information disclosure in the Graphics: ImageLib component
+- [CVE-2026-16355](https://www.cve.org/CVERecord?id=CVE-2026-16355) — JIT miscompilation in the JavaScript Engine: JIT component
+- [CVE-2026-16356](https://www.cve.org/CVERecord?id=CVE-2026-16356) — sandbox escape via use-after-free in the Disability Access APIs component (second instance)
+- [CVE-2026-16357](https://www.cve.org/CVERecord?id=CVE-2026-16357) — incorrect boundary conditions in the Graphics component
+- [CVE-2026-16360](https://www.cve.org/CVERecord?id=CVE-2026-16360) — memory safety bugs shared across ESR 115.38, ESR 140.13, and Firefox 153
+- [CVE-2026-16361](https://www.cve.org/CVERecord?id=CVE-2026-16361) — memory safety bugs shared across ESR 115.38 and ESR 140.13
+- [CVE-2026-16362](https://www.cve.org/CVERecord?id=CVE-2026-16362) — use-after-free in the WebRTC: Audio/Video component
+- [CVE-2026-16363](https://www.cve.org/CVERecord?id=CVE-2026-16363) — JIT miscompilation in the JavaScript: WebAssembly component
+- [CVE-2026-16368](https://www.cve.org/CVERecord?id=CVE-2026-16368) — incorrect boundary conditions in the JavaScript: WebAssembly component
+- [CVE-2026-16369](https://www.cve.org/CVERecord?id=CVE-2026-16369) — integer overflow in the JavaScript: WebAssembly component
+- [CVE-2026-16412](https://www.cve.org/CVERecord?id=CVE-2026-16412) — memory safety bugs shared across ESR 140.13 and Firefox 153
+
+Moderate severity:
+
+- [CVE-2026-16358](https://www.cve.org/CVERecord?id=CVE-2026-16358) — site isolation issue in the Graphics: WebRender component
+- [CVE-2026-16359](https://www.cve.org/CVERecord?id=CVE-2026-16359) — incorrect boundary conditions in the Audio/Video: GMP component
+- [CVE-2026-16371](https://www.cve.org/CVERecord?id=CVE-2026-16371) — privilege escalation in the DOM: Navigation component
+- [CVE-2026-16374](https://www.cve.org/CVERecord?id=CVE-2026-16374) — information disclosure in the DevTools: Framework component
+- [CVE-2026-16375](https://www.cve.org/CVERecord?id=CVE-2026-16375) — site isolation issue in the Networking: HTTP component
+- [CVE-2026-16377](https://www.cve.org/CVERecord?id=CVE-2026-16377) — mitigation bypass in the PDF Viewer component
+- [CVE-2026-16379](https://www.cve.org/CVERecord?id=CVE-2026-16379) — privilege escalation in the DOM: Content Processes component
+- [CVE-2026-16381](https://www.cve.org/CVERecord?id=CVE-2026-16381) — same-origin policy bypass in the Networking: DNS component
+- [CVE-2026-16383](https://www.cve.org/CVERecord?id=CVE-2026-16383) — mitigation bypass in the DOM: Networking component
+- [CVE-2026-16387](https://www.cve.org/CVERecord?id=CVE-2026-16387) — site isolation issue in the Networking component
+- [CVE-2026-16390](https://www.cve.org/CVERecord?id=CVE-2026-16390) — mitigation bypass in the Enterprise Policies component
+- [CVE-2026-16391](https://www.cve.org/CVERecord?id=CVE-2026-16391) — information disclosure in the Storage: IndexedDB component
+- [CVE-2026-16396](https://www.cve.org/CVERecord?id=CVE-2026-16396) — privilege escalation in WebExtensions
+
+Low severity:
+
+- [CVE-2026-16405](https://www.cve.org/CVERecord?id=CVE-2026-16405) — information disclosure in the Networking: WebSockets component
+
+---
+
 ## [140.12.0] — 17/June/2026
 
 ⛐ It's the "twenty-nine CVEs but who's counting" release!
@@ -14,41 +68,41 @@ All releases of ducksteps. Newest first.
 
 **High severity:**
 
-- CVE-2026-12289 — privilege escalation in the Graphics: WebRender component
-- CVE-2026-12290 — memory safety bug in Firefox ESR 140.12
-- CVE-2026-12291 — use-after-free in the Networking: HTTP component
-- CVE-2026-12292 — incorrect boundary conditions in the Web Audio component
-- CVE-2026-12294 — sandbox escape in the DOM: Workers component
-- CVE-2026-12295 — sandbox escape in the DOM: Navigation component
-- CVE-2026-12296 — sandbox escape in the Security: Process Sandboxing component
-- CVE-2026-12297 — sandbox escape via incorrect boundary conditions in the Networking component
-- CVE-2026-12298 — memory safety bug in Firefox ESR 140.12
-- CVE-2026-12299 — JIT miscompilation in the DOM: Core & HTML component
-- CVE-2026-12328 — memory safety bugs shared across ESR 115.37, ESR 140.12, and Firefox 152 (evidence of memory corruption, plausible RCE potential)
-- CVE-2026-12329 — memory safety bug in Firefox ESR 140.12
+- [CVE-2026-12289](https://www.cve.org/CVERecord?id=CVE-2026-12289) — privilege escalation in the Graphics: WebRender component
+- [CVE-2026-12290](https://www.cve.org/CVERecord?id=CVE-2026-12290) — memory safety bug in Firefox ESR 140.12
+- [CVE-2026-12291](https://www.cve.org/CVERecord?id=CVE-2026-12291) — use-after-free in the Networking: HTTP component
+- [CVE-2026-12292](https://www.cve.org/CVERecord?id=CVE-2026-12292) — incorrect boundary conditions in the Web Audio component
+- [CVE-2026-12294](https://www.cve.org/CVERecord?id=CVE-2026-12294) — sandbox escape in the DOM: Workers component
+- [CVE-2026-12295](https://www.cve.org/CVERecord?id=CVE-2026-12295) — sandbox escape in the DOM: Navigation component
+- [CVE-2026-12296](https://www.cve.org/CVERecord?id=CVE-2026-12296) — sandbox escape in the Security: Process Sandboxing component
+- [CVE-2026-12297](https://www.cve.org/CVERecord?id=CVE-2026-12297) — sandbox escape via incorrect boundary conditions in the Networking component
+- [CVE-2026-12298](https://www.cve.org/CVERecord?id=CVE-2026-12298) — memory safety bug in Firefox ESR 140.12
+- [CVE-2026-12299](https://www.cve.org/CVERecord?id=CVE-2026-12299) — JIT miscompilation in the DOM: Core & HTML component
+- [CVE-2026-12328](https://www.cve.org/CVERecord?id=CVE-2026-12328) — memory safety bugs shared across ESR 115.37, ESR 140.12, and Firefox 152 (evidence of memory corruption, plausible RCE potential)
+- [CVE-2026-12329](https://www.cve.org/CVERecord?id=CVE-2026-12329) — memory safety bug in Firefox ESR 140.12
 
 **Moderate severity:**
 
-- CVE-2026-12302 — mitigation bypass in the DOM: Security component
-- CVE-2026-12304 — same-origin policy bypass in the Networking: Cookies component
-- CVE-2026-12305 — memory safety bug in Firefox ESR 140.12
-- CVE-2026-12306 — memory safety bug in Firefox ESR 140.12
-- CVE-2026-12307 — memory safety bug in Firefox ESR 140.12
-- CVE-2026-12308 — memory safety bug in Firefox ESR 140.12
-- CVE-2026-12309 — memory safety bug in Firefox ESR 140.12
-- CVE-2026-12310 — memory safety bug in Firefox ESR 140.12
-- CVE-2026-12311 — information disclosure + sandbox escape in the Security: Process Sandboxing component
-- CVE-2026-12312 — memory safety bug in Firefox ESR 140.12
-- CVE-2026-12313 — information disclosure + sandbox escape in the Security: Process Sandboxing component
-- CVE-2026-12314 — memory safety bug in Firefox ESR 140.12
-- CVE-2026-12315 — mitigation bypass in the DOM: Security component
-- CVE-2026-12327 — memory safety bugs shared across ESR 140.12 and Firefox 152 (evidence of memory corruption, plausible RCE potential)
-- CVE-2026-12330 — incorrect boundary conditions in the Internationalization component
+- [CVE-2026-12302](https://www.cve.org/CVERecord?id=CVE-2026-12302) — mitigation bypass in the DOM: Security component
+- [CVE-2026-12304](https://www.cve.org/CVERecord?id=CVE-2026-12304) — same-origin policy bypass in the Networking: Cookies component
+- [CVE-2026-12305](https://www.cve.org/CVERecord?id=CVE-2026-12305) — memory safety bug in Firefox ESR 140.12
+- [CVE-2026-12306](https://www.cve.org/CVERecord?id=CVE-2026-12306) — memory safety bug in Firefox ESR 140.12
+- [CVE-2026-12307](https://www.cve.org/CVERecord?id=CVE-2026-12307) — memory safety bug in Firefox ESR 140.12
+- [CVE-2026-12308](https://www.cve.org/CVERecord?id=CVE-2026-12308) — memory safety bug in Firefox ESR 140.12
+- [CVE-2026-12309](https://www.cve.org/CVERecord?id=CVE-2026-12309) — memory safety bug in Firefox ESR 140.12
+- [CVE-2026-12310](https://www.cve.org/CVERecord?id=CVE-2026-12310) — memory safety bug in Firefox ESR 140.12
+- [CVE-2026-12311](https://www.cve.org/CVERecord?id=CVE-2026-12311) — information disclosure + sandbox escape in the Security: Process Sandboxing component
+- [CVE-2026-12312](https://www.cve.org/CVERecord?id=CVE-2026-12312) — memory safety bug in Firefox ESR 140.12
+- [CVE-2026-12313](https://www.cve.org/CVERecord?id=CVE-2026-12313) — information disclosure + sandbox escape in the Security: Process Sandboxing component
+- [CVE-2026-12314](https://www.cve.org/CVERecord?id=CVE-2026-12314) — memory safety bug in Firefox ESR 140.12
+- [CVE-2026-12315](https://www.cve.org/CVERecord?id=CVE-2026-12315) — mitigation bypass in the DOM: Security component
+- [CVE-2026-12327](https://www.cve.org/CVERecord?id=CVE-2026-12327) — memory safety bugs shared across ESR 140.12 and Firefox 152 (evidence of memory corruption, plausible RCE potential)
+- [CVE-2026-12330](https://www.cve.org/CVERecord?id=CVE-2026-12330) — incorrect boundary conditions in the Internationalization component
 
 **Low severity:**
 
-- CVE-2026-12324 — incorrect boundary conditions in the Graphics: CanvasWebGL component
-- CVE-2026-12325 — denial-of-service in the Graphics: ImageLib component
+- [CVE-2026-12324](https://www.cve.org/CVERecord?id=CVE-2026-12324) — incorrect boundary conditions in the Graphics: CanvasWebGL component
+- [CVE-2026-12325](https://www.cve.org/CVERecord?id=CVE-2026-12325) — denial-of-service in the Graphics: ImageLib component
 
 ---
 
@@ -62,28 +116,27 @@ All releases of ducksteps. Newest first.
 
 High severity:
 
-    CVE-2026-8401 — sandbox escape via the Profile Backup component
-    CVE-2026-8947 — use-after-free in WebIDL bindings
-    CVE-2026-8388 — out-of-bounds read in the JIT compiler
-    CVE-2026-8391 — issue in the JavaScript engine
-    CVE-2026-8946 — out-of-bounds read in Web Codecs
+- [CVE-2026-8401](https://www.cve.org/CVERecord?id=CVE-2026-8401) — sandbox escape via the Profile Backup component
+- [CVE-2026-8947](https://www.cve.org/CVERecord?id=CVE-2026-8947) — use-after-free in WebIDL bindings
+- [CVE-2026-8388](https://www.cve.org/CVERecord?id=CVE-2026-8388) — out-of-bounds read in the JIT compiler
+- [CVE-2026-8391](https://www.cve.org/CVERecord?id=CVE-2026-8391) — issue in the JavaScript engine
+- [CVE-2026-8946](https://www.cve.org/CVERecord?id=CVE-2026-8946) — out-of-bounds read in Web Codecs
 
 Moderate severity:
 
-    CVE-2026-8953 — sandbox escape via use-after-free in Accessibility APIs
-    CVE-2026-8958 — info disclosure + sandbox escape in process sandboxing
-    CVE-2026-8959 — sandbox escape via out-of-bounds read in Win32 widgets
-    CVE-2026-8950 — same-origin policy bypass in HTTP networking
-    CVE-2026-8949 — integer overflow in Win32 widgets
-    CVE-2026-8956 — integer overflow in JAR networking
-    CVE-2026-8955 — privilege escalation in DOM Workers
-    CVE-2026-8957 — privilege escalation in Enterprise Policies
-    CVE-2026-8954 — out-of-bounds read in audio/video processing
+- [CVE-2026-8953](https://www.cve.org/CVERecord?id=CVE-2026-8953) — sandbox escape via use-after-free in Accessibility APIs
+- [CVE-2026-8958](https://www.cve.org/CVERecord?id=CVE-2026-8958) — info disclosure + sandbox escape in process sandboxing
+- [CVE-2026-8959](https://www.cve.org/CVERecord?id=CVE-2026-8959) — sandbox escape via out-of-bounds read in Win32 widgets
+- [CVE-2026-8950](https://www.cve.org/CVERecord?id=CVE-2026-8950) — same-origin policy bypass in HTTP networking
+- [CVE-2026-8949](https://www.cve.org/CVERecord?id=CVE-2026-8949) — integer overflow in Win32 widgets
+- [CVE-2026-8956](https://www.cve.org/CVERecord?id=CVE-2026-8956) — integer overflow in JAR networking
+- [CVE-2026-8955](https://www.cve.org/CVERecord?id=CVE-2026-8955) — privilege escalation in DOM Workers
+- [CVE-2026-8957](https://www.cve.org/CVERecord?id=CVE-2026-8957) — privilege escalation in Enterprise Policies
+- [CVE-2026-8954](https://www.cve.org/CVERecord?id=CVE-2026-8954) — out-of-bounds read in audio/video processing
 
 Low severity:
 
-    CVE-2026-8961 — spoofing issue in Form Autofill
-
+- [CVE-2026-8961](https://www.cve.org/CVERecord?id=CVE-2026-8961) — spoofing issue in Form Autofill
 
 ---
 
