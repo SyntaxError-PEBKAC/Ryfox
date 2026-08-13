@@ -10,6 +10,7 @@
 | rcedit | `C:\Users\User\.mozbuild\rcedit\rcedit-x64.exe` |
 | package.sh | `D:\ducksteps\mozilla-source\ducksteps\package.sh` |
 | background.js | `D:\ducksteps\mozilla-source\ducksteps\build\pgo\pgo_training_extension\background.js` |
+| Docs/Patches repo | `D:\ducksteps\ducksteps-docs` |
 
 ---
 
@@ -201,12 +202,31 @@ export OBJDIR="D:/ducksteps/ducksteps-obj/esr1XX"
 
 ---
 
+## 📤 Step 15 — Update the patch stack
+
+Export your commits as patches and push them to the docs repo, so the published patch stack (and your off-machine backup) stays current with the release:
+
+```bash
+cd D:/ducksteps/ducksteps-docs
+git pull
+rm Patches/000*.patch
+git -C D:/ducksteps/mozilla-source/ducksteps format-patch --binary -o Patches FIREFOX_1XX_X_X_RELEASE..HEAD
+git add Patches/
+git commit -m "Update patch stack for 1XX.X.X"
+git push
+```
+
+`FIREFOX_1XX_X_X_RELEASE` is the same tag you rebased onto in Step 6 — since your patch stack sits directly on top of it after every rebase, it's always the correct range start. No need to track a base commit hash by hand.
+
+---
+
 ## ☑️ Release Checklist
 
 - [ ] Build completed without fatal errors
 - [ ] `./mach run` launches with correct ducksteps branding (no Nightly purple)
 - [ ] `package.sh` completed and installer is ~72 MB (not under 1 MB)
 - [ ] `Changelog.md` updated
+- [ ] Patch stack updated and pushed to `ducksteps-docs`
 
 ---
 
