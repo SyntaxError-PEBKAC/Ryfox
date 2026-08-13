@@ -1,0 +1,196 @@
+From 620946547e10ef058e46971b7f803d88368be23d Mon Sep 17 00:00:00 2001
+From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
+Date: Wed, 29 Apr 2026 17:36:43 -0700
+Subject: [PATCH 3/9] ducksteps: WebExtension PGO training + profileserver
+ patches
+
+---
+ build/pgo/profileserver.py | 94 ++++++++++++++++++++++++--------------
+ 1 file changed, 59 insertions(+), 35 deletions(-)
+
+diff --git a/build/pgo/profileserver.py b/build/pgo/profileserver.py
+index b984bf821331..f094e9956192 100755
+--- a/build/pgo/profileserver.py
++++ b/build/pgo/profileserver.py
+@@ -7,9 +7,10 @@
+ import glob
+ import json
+ import os
++import shutil
+ import subprocess
+ import sys
+-import time
++import threading
+ 
+ import mozcrash
+ from mozbuild.base import BinaryNotFoundException, MozbuildObject
+@@ -35,6 +36,11 @@ def get_crashreports(directory, name=None):
+     upload_path = os.environ.get("UPLOAD_PATH")
+     if not upload_path:
+         upload_path = os.environ.get("UPLOAD_DIR")
++    # -- ducksteps: skip minidump processing outside Mozilla CI --
++    # MOZ_FETCHES_DIR is never set in local builds; crash reports are
++    # not actionable here anyway.
++    if not os.environ.get("MOZ_FETCHES_DIR"):
++        return 0
+     if upload_path:
+         # For automation, log the minidumps with stackwalk and get them moved to
+         # the artifacts directory.
+@@ -67,6 +73,12 @@ if __name__ == "__main__":
+ 
+     build = MozbuildObject.from_environment()
+ 
++    # -- ducksteps: always write run logs to objdir, regardless of UPLOAD_PATH --
++    _log_dir = os.path.join(build.topobjdir, "pgo_logs")
++    os.makedirs(_log_dir, exist_ok=True)
++    if "UPLOAD_PATH" not in os.environ:
++        os.environ["UPLOAD_PATH"] = _log_dir
++
+     binary = runner_args.get("binary")
+     if not binary:
+         try:
+@@ -124,10 +136,19 @@ if __name__ == "__main__":
+                 v = v.format(**interpolation)
+             prefs[k] = Preferences.cast(v)
+ 
+-        # NOTE: Marionette prefs are NOT set here. They are injected into
+-        # user.js after the first (init) run completes, to prevent the init
+-        # run from binding to port 2828 and causing a port conflict when the
+-        # second (training) run launches.
++        # -- ducksteps: enable dump() so extension progress logs appear in stdout --
++        prefs["browser.dom.window.dump.enabled"] = True
++
++        # -- ducksteps: allow sideloaded extensions without prompt --
++        prefs["extensions.autoDisableScopes"] = 0
++
++        # -- ducksteps: allow unsigned extension (custom build, not enforced at compile time) --
++        prefs["xpinstall.signatures.required"] = False
++
++        # -- ducksteps: install training extension alongside Quitter via the proper addon install path --
++        training_ext = os.path.join(
++            build.topsrcdir, "build", "pgo", "pgo_training_extension"
++        )
+ 
+         profile = FirefoxProfile(
+             profile=profilePath,
+@@ -135,14 +156,17 @@ if __name__ == "__main__":
+             addons=[
+                 os.path.join(
+                     build.topsrcdir, "tools", "quitter", "quitter@mozilla.org.xpi"
+-                )
++                ),
++                training_ext,
+             ],
+             locations=locations,
+         )
+ 
+         env = os.environ.copy()
+         env["MOZ_CRASHREPORTER_NO_REPORT"] = "1"
+-        env["MOZ_CRASHREPORTER_SHUTDOWN"] = "1"
++        # -- ducksteps: removed MOZ_CRASHREPORTER_SHUTDOWN -- content process crashes
++        # on real-world sites (JS errors, bad ad scripts, etc.) must not kill the
++        # entire profiling run. The browser will recover and continue training.
+         env["XPCOM_DEBUG_BREAK"] = "warn"
+ 
+         # Ensure different pids write to different files
+@@ -180,19 +204,6 @@ if __name__ == "__main__":
+             get_crashreports(profilePath, name="Profile initialization")
+             sys.exit(ret)
+ 
+-        # -- ducksteps: inject Marionette prefs AFTER init run --
+-        # The init run is done and port 2828 is free. Write Marionette prefs
+-        # into the profile so the training run picks them up.
+-        user_js = os.path.join(profilePath, "user.js")
+-        with open(user_js, "a") as f:
+-            f.write('\n// ducksteps: Marionette prefs for custom PGO training\n')
+-            f.write('user_pref("marionette.enabled", true);\n')
+-            f.write('user_pref("marionette.port", 2828);\n')
+-            f.write('user_pref("dom.max_script_run_time", 0);\n')
+-
+-        # Brief pause to ensure port 2828 is fully released from init run
+-        time.sleep(2)
+-
+         jarlog = os.getenv("JARLOG_FILE")
+         if jarlog:
+             env["MOZ_JAR_LOG_FILE"] = os.path.abspath(jarlog)
+@@ -205,11 +216,12 @@ if __name__ == "__main__":
+                 env["UPLOAD_PATH"], "profile-run-2.log"
+             )
+ 
+-        # -- ducksteps: custom PGO training workload --
+-        # Launch with Marionette enabled, sitting on about:blank.
+-        # pgo_training.py connects via Marionette, drives the workload,
+-        # then quits Firefox cleanly to flush .profraw data.
+-        cmdargs = ["-marionette", "about:blank"]
++        # -- ducksteps: custom PGO training via WebExtension --
++        # The pgo_training extension drives the workload autonomously:
++        # background.js iterates through ~90 sites with realistic scroll
++        # behaviors and hot-path exercisers, then navigates to pgo_done.html
++        # which calls Quitter.quit() for a clean exit that flushes .profraw.
++        cmdargs = ["about:blank"]
+         runner = FirefoxRunner(
+             profile=profile,
+             binary=binary,
+@@ -218,17 +230,19 @@ if __name__ == "__main__":
+             process_args=process_args,
+         )
+         runner.start(debug_args=debug_args, interactive=interactive)
+-        try:
+-            sys.path.insert(0, build.topsrcdir)
+-            from pgo_training import run_training
+-            run_training(build.topsrcdir)
+-        except Exception as e:
+-            print("ducksteps PGO training error: %s" % e)
+-        finally:
++
++        # Watchdog: kill Firefox if training exceeds 3 hours (safety net)
++        def _watchdog():
++            import time as _time
++            _time.sleep(10800)
+             if runner.is_running():
++                print("[ducksteps PGO] Watchdog: exceeded 3 hours, killing Firefox")
+                 runner.stop()
+-        ret = runner.wait()
+ 
++        wd = threading.Thread(target=_watchdog, daemon=True)
++        wd.start()
++
++        ret = runner.wait()
+         sp3_httpd.stop()
+         httpd.stop()
+         if ret:
+@@ -274,13 +288,23 @@ if __name__ == "__main__":
+                 sys.exit(1)
+ 
+             merged_profdata = "merged.profdata"
++
++            # -- ducksteps: work around Windows 32K command-line limit (WinError 206)
++            # when temporal profiling generates hundreds of profraw files.
++            # llvm-profdata supports @response_file syntax.
++            response_file = os.path.join(os.getcwd(), "profraw_files.txt")
++            with open(response_file, "w") as f:
++                for p in profraw_files:
++                    f.write(p + "\n")
+             merge_cmd = [
+                 llvm_profdata,
+                 "merge",
+                 "-o",
+                 merged_profdata,
+-            ] + profraw_files
++                "@" + response_file,
++            ]
+             rc = subprocess.call(merge_cmd)
++
+             if rc != 0:
+                 print("INFRA-ERROR: Failed to merge profile data. Corrupt profile?")
+                 # exit with TBPL_RETRY
+@@ -293,4 +317,4 @@ if __name__ == "__main__":
+ 
+             if os.path.getsize(merged_profdata) == 0:
+                 print(merged_profdata, "was created but it is empty", file=sys.stderr)
+-                sys.exit(1)
++                sys.exit(1)
+\ No newline at end of file
+-- 
+2.52.0.windows.1
+

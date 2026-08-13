@@ -1,0 +1,335 @@
+From 48f0078a575a7c80d27274b94f65f8315e2d09d3 Mon Sep 17 00:00:00 2001
+From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
+Date: Tue, 5 May 2026 19:37:21 -0700
+Subject: [PATCH 7/9] ducksteps PGO: fullscreen video, airbnb popup fix,
+ librespeed retry, speedometer dwell bump, duck.ai submit fix
+
+---
+ .../pgo/pgo_training_extension/background.js  | 188 ++++++++++++++----
+ 1 file changed, 152 insertions(+), 36 deletions(-)
+
+diff --git a/build/pgo/pgo_training_extension/background.js b/build/pgo/pgo_training_extension/background.js
+index 91dbc7a61bdb..ef3c67bdab3e 100644
+--- a/build/pgo/pgo_training_extension/background.js
++++ b/build/pgo/pgo_training_extension/background.js
+@@ -19,7 +19,7 @@ const PAGE_LOAD_TIMEOUT = 30000;
+ // ---------------------------------------------------------------------------
+ // Site corpus: [url, behavior, dwell_seconds]
+ // Sorted by PGO impact (high -> low) within each category.
+-// Total estimated runtime: ~130 minutes.
++// Total estimated runtime: ~137 minutes.
+ // LAST UPDATED 05/MAY/2026
+ // ---------------------------------------------------------------------------
+ const SITES = [
+@@ -34,7 +34,7 @@ const SITES = [
+   ["https://www.speedtest.net", "speedtest_ookla", 75],          // dedicated behavior: clicks a.js-start-test
+   ["https://librespeed.org", "librespeed", 45],                   // dedicated behavior: clicks #start-button
+   ["https://speed.cloudflare.com", "speedtest", 72],              // generic heuristic still fine here
+-  ["http://localhost:8000/InteractiveRunner.html?startAutomatically=true", "static", 120], // Speedometer 3 — auto-fires via URL param, no click needed
++  ["http://localhost:8000/InteractiveRunner.html?startAutomatically=true", "static", 300], // Speedometer 3 — auto-fires via URL param; ~3.5min on 9950X3D, 5min dwell for headroom
+ 
+   // JS-HEAVY SPAs — SpiderMonkey JIT, GC, DOM mutation
+   ["https://duck.ai", "duckai", 90],                              // consent dismiss + Haiku 4.5 + SpiderMonkey prompt
+@@ -44,7 +44,7 @@ const SITES = [
+   ["https://redlib.catsarch.com/", "spa", 90],
+   ["https://redlib.catsarch.com/r/pics/comments/haucpf/ive_found_a_few_funny_memories_during_lockdown/", "spa", 182],
+   ["https://react.dev/learn", "spa", 85],
+-  ["https://www.airbnb.com/s/Tokyo/homes", "spa", 35],
++  ["https://www.airbnb.com/s/Tokyo/homes", "airbnb", 35],        // dedicated behavior: dismisses popup before scrolling
+   ["https://netflix.com", "spa", 45],
+   ["https://angular.dev/overview", "spa", 40],
+   ["https://vuejs.org/guide/essentials/component-basics.html", "spa", 73],
+@@ -234,7 +234,7 @@ function _exerciseHotPaths(dwellMs) {
+   var perfInterval = setInterval(function () {
+     performance.now();
+     try { performance.getEntriesByType("resource").slice(0, 5); } catch (e) {}
+-  }, 3000);
++  } , 3000);
+   setTimeout(function () { clearInterval(perfInterval); }, dwellMs);
+ }
+ 
+@@ -276,39 +276,87 @@ function _longRead(dwellMs) {
+   cycle();
+ }
+ 
++// ---------------------------------------------------------------------------
++// _enterFullscreen / _exitFullscreen helpers
++// Shared by all video behaviors. Requests fullscreen on the video element
++// (falls back to documentElement), holds for 15s, then exits.
++// The calling behavior passes a callback that fires after fullscreen exits,
++// at which point normal scroll patterns begin.
++// ---------------------------------------------------------------------------
++function _enterFullscreen(onExit) {
++  setTimeout(function () {
++    try {
++      var v = document.querySelector("video");
++      var target = (v && v.requestFullscreen) ? v : document.documentElement;
++      if (target.requestFullscreen) {
++        target.requestFullscreen().catch(function () {});
++      } else if (target.webkitRequestFullscreen) {
++        target.webkitRequestFullscreen();
++      }
++    } catch (e) {}
++  }, 4000); // 4s: video needs to be playing before fullscreen request
++
++  setTimeout(function () {
++    try {
++      if (document.exitFullscreen) {
++        document.exitFullscreen().catch(function () {});
++      } else if (document.webkitExitFullscreen) {
++        document.webkitExitFullscreen();
++      }
++    } catch (e) {}
++    if (onExit) onExit();
++  }, 19000); // 4s init + 15s fullscreen = 19s before scroll starts
++}
++
+ function _video(dwellMs) {
++  // Play video immediately
+   setTimeout(function () {
+     try {
+       var v = document.querySelector("video");
+       if (v && v.paused) v.play().catch(function () {});
+     } catch (e) {}
+   }, 3000);
+-  var scrollStart = dwellMs * 0.6;
+-  var end = Date.now() + dwellMs;
+-  setTimeout(function () {
+-    var si = setInterval(function () {
+-      if (Date.now() >= end) { clearInterval(si); return; }
+-      var px = 300 + Math.floor(Math.random() * 200);
+-      window.scrollBy({ top: px, behavior: "smooth" });
+-    }, 1500 + Math.random() * 600);
+-  }, scrollStart);
++
++  // Fullscreen for 15s, then scroll for remainder
++  _enterFullscreen(function () {
++    var scrollStart = dwellMs * 0.6;
++    var end = Date.now() + dwellMs;
++    // Adjust remaining dwell — 19s already consumed by fullscreen phase
++    var remaining = dwellMs - 19000;
++    if (remaining > 5000) {
++      setTimeout(function () {
++        var si = setInterval(function () {
++          if (Date.now() >= end) { clearInterval(si); return; }
++          var px = 300 + Math.floor(Math.random() * 200);
++          window.scrollBy({ top: px, behavior: "smooth" });
++        }, 1500 + Math.random() * 600);
++      }, Math.max(0, scrollStart - 19000));
++    }
++  });
+ }
+ 
+ function _videoLateScroll(dwellMs) {
++  // Play video immediately
+   setTimeout(function () {
+     try {
+       var v = document.querySelector("video");
+       if (v && v.paused) v.play().catch(function () {});
+     } catch (e) {}
+   }, 3000);
+-  var end = Date.now() + dwellMs;
+-  setTimeout(function () {
+-    var si = setInterval(function () {
+-      if (Date.now() >= end) { clearInterval(si); return; }
+-      var px = 300 + Math.floor(Math.random() * 200);
+-      window.scrollBy({ top: px, behavior: "smooth" });
+-    }, 1500 + Math.random() * 600);
+-  }, 70000);
++
++  // Fullscreen for 15s, then hold until 70s mark before scrolling comments
++  _enterFullscreen(function () {
++    var end = Date.now() + dwellMs;
++    // Original late scroll was 70s; 19s already consumed, so delay remainder
++    var scrollDelay = Math.max(0, 70000 - 19000);
++    setTimeout(function () {
++      var si = setInterval(function () {
++        if (Date.now() >= end) { clearInterval(si); return; }
++        var px = 300 + Math.floor(Math.random() * 200);
++        window.scrollBy({ top: px, behavior: "smooth" });
++      }, 1500 + Math.random() * 600);
++    }, scrollDelay);
++  });
+ }
+ 
+ function _ecommerce(dwellMs) {
+@@ -401,6 +449,44 @@ function _apnewsRead(dwellMs) {
+   }, 5000);
+ }
+ 
++// Airbnb: dismiss the "Got it" / X popup that blocks scrolling on load,
++// then hand off to _spa for the remainder.
++function _airbnb(dwellMs) {
++  var end = Date.now() + dwellMs;
++
++  // Dismiss popup — try "Got it" button text first, then top-right X.
++  // Airbnb renders the modal ~2-3s after page load.
++  setTimeout(function () {
++    try {
++      // Try "Got it" / "OK" button by text content
++      var btns = document.querySelectorAll('button');
++      var dismissed = false;
++      for (var i = 0; i < btns.length; i++) {
++        var t = btns[i].textContent.trim().toLowerCase();
++        if (t === 'got it' || t === 'ok' || t === 'okay' || t === 'close') {
++          btns[i].click();
++          dismissed = true;
++          break;
++        }
++      }
++      // Fallback: top-right X — aria-label or data-testid containing "close"
++      if (!dismissed) {
++        var closeBtn = document.querySelector(
++          '[aria-label*="close" i], [aria-label*="dismiss" i], ' +
++          '[data-testid*="close" i], [data-testid*="dismiss" i]'
++        );
++        if (closeBtn) closeBtn.click();
++      }
++    } catch (e) {}
++  }, 3000);
++
++  // Hand off to _spa after popup window — _longRead injected as dependency
++  setTimeout(function () {
++    var remaining = end - Date.now();
++    if (remaining > 5000) _spa(remaining);
++  }, 5000);
++}
++
+ function _map(dwellMs) {
+   var end = Date.now() + dwellMs;
+   setTimeout(function () {
+@@ -465,7 +551,6 @@ function _speedtestOokla(dwellMs) {
+       if (btn) {
+         btn.click();
+       } else {
+-        // Fallback: Ookla occasionally restructures — try aria-label
+         var fallback = document.querySelector('[aria-label*="start speed test" i]');
+         if (fallback) fallback.click();
+       }
+@@ -477,15 +562,18 @@ function _speedtestOokla(dwellMs) {
+ }
+ 
+ // LibreSpeed: clicks #start-button directly.
+-// Button is present in static HTML but initializes as class="disabled" —
+-// the JS enables it once a server is found (~1-2s). 4s wait covers this.
++// Button initializes disabled until server ping completes (~1-2s).
++// 4s wait covers this. Also retries once at 6s in case of slow server
++// selection — the button is a no-op while disabled so double-click is safe.
+ function _librespeed(dwellMs) {
+-  setTimeout(function () {
++  function tryClick() {
+     try {
+       var btn = document.querySelector("#start-button");
+       if (btn) btn.click();
+     } catch (e) {}
+-  }, 4000);
++  }
++  setTimeout(tryClick, 4000);  // primary attempt
++  setTimeout(tryClick, 6000);  // retry in case server ping was slow
+   setTimeout(function () {
+     window.scrollBy({ top: 400, behavior: "smooth" });
+   }, dwellMs - 3000);
+@@ -516,8 +604,6 @@ function _complexCss(dwellMs) {
+ // prompt that elicits a long streaming response.
+ // Exercises: React reconciler, streaming DOM mutation, font shaping,
+ // smooth-scroll on a tall response.
+-// Falls back gracefully if any step misses — _exerciseHotPaths still runs
+-// for the full dwell regardless.
+ function _duckai(dwellMs) {
+   var end = Date.now() + dwellMs;
+ 
+@@ -559,9 +645,6 @@ function _duckai(dwellMs) {
+   }, 7500);
+ 
+   // Step 5 — Type prompt via React synthetic event
+-  // Direct .value= assignment is silently ignored by React controlled inputs;
+-  // nativeInputValueSetter bypasses the React wrapper and fires a real
+-  // input event that React's reconciler actually picks up.
+   setTimeout(function () {
+     try {
+       var textarea = document.querySelector('textarea[name="user-prompt"]');
+@@ -582,18 +665,35 @@ function _duckai(dwellMs) {
+     } catch (e) {}
+   }, 10000);
+ 
+-  // Step 6 — Submit
++  // Step 6 — Submit: Enter keydown first, then click send button as fallback.
++  // duck.ai intercepts Enter on the textarea; the send button (↑ arrow) is
++  // the belt-and-suspenders fallback if the keydown doesn't fire correctly.
+   setTimeout(function () {
+     try {
+       var textarea = document.querySelector('textarea[name="user-prompt"]');
+       if (textarea) {
+         textarea.dispatchEvent(
+-          new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true })
++          new KeyboardEvent('keydown', {
++            key: 'Enter', code: 'Enter', keyCode: 13,
++            which: 13, bubbles: true, cancelable: true
++          })
+         );
+       }
+     } catch (e) {}
+   }, 11500);
+ 
++  setTimeout(function () {
++    try {
++      // Send button: look for button with aria-label containing "send",
++      // or a button containing only an SVG (the ↑ arrow icon button)
++      var sendBtn =
++        document.querySelector('[aria-label*="send" i]') ||
++        document.querySelector('[aria-label*="submit" i]') ||
++        document.querySelector('button[type="submit"]');
++      if (sendBtn) sendBtn.click();
++    } catch (e) {}
++  }, 12500); // 1s after Enter attempt — only fires if Enter didn't work
++
+   // Step 7 — Scroll streaming response
+   setTimeout(function () {
+     var remaining = end - Date.now();
+@@ -625,12 +725,13 @@ const BEHAVIORS = {
+   ecommerce:         _ecommerce,
+   spa:               _spa,
+   apnews:            _apnewsRead,
++  airbnb:            _airbnb,           // popup dismiss + spa scroll
+   map:               _map,
+   speedtest:         _speedtest,
+-  speedtest_ookla:   _speedtestOokla,  // Ookla-specific: targets a.js-start-test
+-  librespeed:        _librespeed,      // LibreSpeed-specific: targets #start-button
++  speedtest_ookla:   _speedtestOokla,   // Ookla-specific: targets a.js-start-test
++  librespeed:        _librespeed,       // LibreSpeed-specific: targets #start-button, retries at 6s
+   complex_css:       _complexCss,
+-  duckai:            _duckai,          // consent + Haiku 4.5 + SpiderMonkey prompt
++  duckai:            _duckai,           // consent + Haiku 4.5 + SpiderMonkey prompt
+   static:            _static,
+ };
+ 
+@@ -646,11 +747,26 @@ async function injectBehavior(tabId, behavior, dwellSeconds) {
+   }
+ 
+   var code;
++  // Behaviors that call _longRead or _spa internally need those injected
++  // as dependencies alongside themselves.
+   if (behavior === "ecommerce" || behavior === "spa" || behavior === "apnews") {
+     code =
+       "var _longRead = " + _longRead.toString() + ";\n" +
+       "(" + _exerciseHotPaths.toString() + ")(" + dwellMs + ");\n" +
+       "(" + behaviorFn.toString() + ")(" + dwellMs + ");";
++  } else if (behavior === "airbnb") {
++    // _airbnb calls _spa which calls _longRead — inject both dependencies
++    code =
++      "var _longRead = " + _longRead.toString() + ";\n" +
++      "var _spa = " + _spa.toString() + ";\n" +
++      "(" + _exerciseHotPaths.toString() + ")(" + dwellMs + ");\n" +
++      "(" + behaviorFn.toString() + ")(" + dwellMs + ");";
++  } else if (behavior === "video" || behavior === "video_late_scroll") {
++    // Video behaviors call _enterFullscreen — inject as dependency
++    code =
++      "var _enterFullscreen = " + _enterFullscreen.toString() + ";\n" +
++      "(" + _exerciseHotPaths.toString() + ")(" + dwellMs + ");\n" +
++      "(" + behaviorFn.toString() + ")(" + dwellMs + ");";
+   } else {
+     code =
+       "(" + _exerciseHotPaths.toString() + ")(" + dwellMs + ");\n" +
+-- 
+2.52.0.windows.1
+

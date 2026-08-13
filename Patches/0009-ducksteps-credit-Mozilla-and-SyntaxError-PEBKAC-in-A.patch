@@ -1,0 +1,58 @@
+From 4cffc87b7045e7ccbb9c6570e062f50ef1816758 Mon Sep 17 00:00:00 2001
+From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
+Date: Wed, 12 Aug 2026 22:32:40 -0700
+Subject: [PATCH 9/9] ducksteps: credit Mozilla and SyntaxError-PEBKAC in About
+ dialog, point What's new to changelog
+
+Reword the About dialog credit line to name both Mozilla (design) and
+SyntaxError-PEBKAC (build), move the mozilla.org hyperlink onto
+"Mozilla", and add a new link on "SyntaxError-PEBKAC" to its GitHub
+org. Also repoint the ESR "What's new" release-notes link from
+mozilla.org to the ducksteps changelog.
+---
+ browser/base/content/aboutDialog.xhtml              | 1 +
+ browser/branding/ducksteps/pref/firefox-branding.js | 2 +-
+ browser/locales/en-US/browser/aboutDialog.ftl       | 2 +-
+ 3 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/browser/base/content/aboutDialog.xhtml b/browser/base/content/aboutDialog.xhtml
+index c64980810570..2b6b56ea532c 100644
+--- a/browser/base/content/aboutDialog.xhtml
++++ b/browser/base/content/aboutDialog.xhtml
+@@ -126,6 +126,7 @@
+           </vbox>
+           <description class="text-blurb" id="communityDesc" data-l10n-id="community-2">
+             <label is="text-link" href="https://www.mozilla.org/?utm_source=firefox-browser&#38;utm_medium=firefox-desktop&#38;utm_campaign=about-dialog" data-l10n-name="community-mozillaLink"/>
++            <label is="text-link" href="https://github.com/SyntaxError-PEBKAC" data-l10n-name="community-vendorLink"/>
+             <label is="text-link" useoriginprincipal="true" href="about:credits" data-l10n-name="community-creditsLink"/>
+           </description>
+           <description class="text-blurb" id="contributeDesc" data-l10n-id="helpus">
+diff --git a/browser/branding/ducksteps/pref/firefox-branding.js b/browser/branding/ducksteps/pref/firefox-branding.js
+index 25711ea79fe9..1be7a9632373 100644
+--- a/browser/branding/ducksteps/pref/firefox-branding.js
++++ b/browser/branding/ducksteps/pref/firefox-branding.js
+@@ -25,7 +25,7 @@ pref("app.update.promptWaitTime", 691200);
+   pref("app.update.url.manual", "https://www.mozilla.org/%LOCALE%/firefox/enterprise?reason=manual-update");
+   pref("app.update.url.details", "https://www.mozilla.org/%LOCALE%/firefox/organizations/notes");
+   pref("app.releaseNotesURL", "https://www.mozilla.org/%LOCALE%/firefox/%VERSION%/releasenotes/?utm_source=firefox-browser&utm_medium=firefox-desktop&utm_campaign=whatsnew");
+-  pref("app.releaseNotesURL.aboutDialog", "https://www.mozilla.org/%LOCALE%/firefox/%VERSION%/releasenotes/?utm_source=firefox-browser&utm_medium=firefox-desktop&utm_campaign=about-dialog");
++  pref("app.releaseNotesURL.aboutDialog", "https://github.com/SyntaxError-PEBKAC/ducksteps/blob/main/Docs/Changelog.md");
+ #else
+   pref("app.update.url.manual", "https://www.mozilla.org/%LOCALE%/firefox/new?reason=manual-update");
+   pref("app.update.url.details", "https://www.mozilla.org/%LOCALE%/firefox/notes");
+diff --git a/browser/locales/en-US/browser/aboutDialog.ftl b/browser/locales/en-US/browser/aboutDialog.ftl
+index d266d15b6ce8..9a4eb320b782 100644
+--- a/browser/locales/en-US/browser/aboutDialog.ftl
++++ b/browser/locales/en-US/browser/aboutDialog.ftl
+@@ -61,7 +61,7 @@ aboutdialog-submit-feedback = Submit Feedback
+ 
+ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-short-name }</label> is a <label data-l10n-name="community-exp-creditsLink">global community</label> working together to keep the Web open, public and accessible to all.
+ 
+-community-2 = { -brand-short-name } is designed by <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, a <label data-l10n-name="community-creditsLink">global community</label> working together to keep the Web open, public and accessible to all.
++community-2 = { -brand-short-name } is designed by <label data-l10n-name="community-mozillaLink">Mozilla</label> and built by <label data-l10n-name="community-vendorLink">{ -vendor-short-name }</label>, with a <label data-l10n-name="community-creditsLink">global community</label> working together to keep the Web open, public, and accessible to all.
+ 
+ helpus = Want to help? <label data-l10n-name="helpus-donateLink">Make a donation</label> or <label data-l10n-name="helpus-getInvolvedLink">get involved!</label>
+ 
+-- 
+2.52.0.windows.1
+
