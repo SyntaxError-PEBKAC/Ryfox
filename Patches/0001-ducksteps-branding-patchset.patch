@@ -1,7 +1,7 @@
 From 571e7dc558e6c6f022fbf34b75722c6492e6b31f Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Fri, 13 Feb 2026 12:50:10 -0700
-Subject: [PATCH 1/9] ducksteps: branding + patchset
+Subject: [PATCH 01/10] ducksteps: branding + patchset
 
 ---
  browser/app/application.ini                   |   8 ++
