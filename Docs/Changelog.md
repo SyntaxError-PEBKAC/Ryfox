@@ -1,10 +1,10 @@
 ## [153.0] (15/August/2026)
 
-⛐ It's the "twenty highs, thirty-five mediums, eight who cares" release!
+⛐ It's the "sixty real bugs, one fake virus" release!
 
 🔄 Updated to Firefox ESR 153.0. ducksteps: resync stub installer CSS with ESR 153 markup; ducksteps: fix About dialog wordmark overlap on ESR 153; ducksteps: fix installer wizard bitmap artifacts; ducksteps: credit Mozilla and SyntaxError-PEBKAC in About dialog, point What's new to changelog; ducksteps PGO: remove video fullscreen, Speedometer dwell -15s, corpus tweaks; ducksteps PGO: fullscreen video, airbnb popup fix, librespeed retry, speedometer dwell bump, duck.ai submit fix; ducksteps PGO: corpus updates; duckai behavior, speedtest fixes, dwell bumps; Remove stale Marionette PGO script, superseded by background.js; ducksteps: remove UPX from SFX stub (VT false positive fix); ducksteps: WebExtension PGO training + profileserver patches; Custom PGO training: replace Mozilla default workload with realistic browsing corpus; ducksteps: branding + patchset.
 
-🛡️ Addressed 63 CVEs from [Mozilla Foundation Security Advisory 2026-68](https://www.mozilla.org/en-US/security/advisories/mfsa2026-68/) (July 21, 2026). Sixty-three CVEs down this round (20 high, 35 moderate, 8 low), which is a lot of squashing for one person and a build script to do on a Friday. Nothing here is the kind of headline zero-day that gets its own blog post, but 20 highs is still 20 highs, and "moderate" is doing a lot of load-bearing work in that middle chunk. As usual the move is to just update rather than trying to guess which ones actually apply to your setup; go restart the browser, you'll live.
+🛡️ Addressed 60 CVEs from [Mozilla Foundation Security Advisory 2026-68](https://www.mozilla.org/en-US/security/advisories/mfsa2026-68/) (July 21, 2026). Sixty-ish CVEs patched this round; twenty high, thirty-three moderate, seven of the shrug-and-update variety. Nothing in here is a "drop everything" fire, but twenty highs is still twenty highs, so don't let this one sit in the update queue. Rode in alongside the usual pile of ducksteps upkeep; installer polish, an About dialog that no longer elbows its own wordmark, and getting the antivirus engines to stop flagging the installer for a crime it didn't commit. Patch, ship, move on.
 
 High severity:
 
@@ -34,7 +34,6 @@ Moderate severity:
 - **[CVE-2026-16370](https://www.cve.org/CVERecord?id=CVE-2026-16370)** Mitigation bypass in the DOM: Networking component
 - **[CVE-2026-16371](https://www.cve.org/CVERecord?id=CVE-2026-16371)** Privilege escalation in the DOM: Navigation component
 - **[CVE-2026-16372](https://www.cve.org/CVERecord?id=CVE-2026-16372)** Privilege escalation in the DOM: Content Processes component
-- **[CVE-2026-16373](https://www.cve.org/CVERecord?id=CVE-2026-16373)** Information disclosure in the Privacy component in Firefox for Android
 - **[CVE-2026-16374](https://www.cve.org/CVERecord?id=CVE-2026-16374)** Information disclosure in the Framework component in DevTools
 - **[CVE-2026-16375](https://www.cve.org/CVERecord?id=CVE-2026-16375)** Site isolation issue in the Networking: HTTP component
 - **[CVE-2026-16376](https://www.cve.org/CVERecord?id=CVE-2026-16376)** Denial-of-service in the Graphics: WebGPU component
@@ -60,7 +59,6 @@ Moderate severity:
 - **[CVE-2026-16394](https://www.cve.org/CVERecord?id=CVE-2026-16394)** Mitigation bypass in the DOM: Security component
 - **[CVE-2026-16395](https://www.cve.org/CVERecord?id=CVE-2026-16395)** Integer overflow in the Audio/Video component
 - **[CVE-2026-16396](https://www.cve.org/CVERecord?id=CVE-2026-16396)** Privilege escalation in WebExtensions
-- **[CVE-2026-16397](https://www.cve.org/CVERecord?id=CVE-2026-16397)** Clickjacking issue in the WebExtensions component in Firefox for Android
 - **[CVE-2026-16398](https://www.cve.org/CVERecord?id=CVE-2026-16398)** Site isolation issue in the Graphics component
 - **[CVE-2026-16399](https://www.cve.org/CVERecord?id=CVE-2026-16399)** Site isolation issue in the DOM: Navigation component
 - **[CVE-2026-16400](https://www.cve.org/CVERecord?id=CVE-2026-16400)** Information disclosure in the DOM: Security component
@@ -70,7 +68,6 @@ Moderate severity:
 Low severity:
 
 - **[CVE-2026-16403](https://www.cve.org/CVERecord?id=CVE-2026-16403)** Spoofing issue in the Address Bar component
-- **[CVE-2026-16404](https://www.cve.org/CVERecord?id=CVE-2026-16404)** Spoofing issue in Firefox for Android
 - **[CVE-2026-16405](https://www.cve.org/CVERecord?id=CVE-2026-16405)** Information disclosure in the Networking: WebSockets component
 - **[CVE-2026-16406](https://www.cve.org/CVERecord?id=CVE-2026-16406)** Mitigation bypass in the Networking component
 - **[CVE-2026-16407](https://www.cve.org/CVERecord?id=CVE-2026-16407)** Mitigation bypass in the DOM: Service Workers component
