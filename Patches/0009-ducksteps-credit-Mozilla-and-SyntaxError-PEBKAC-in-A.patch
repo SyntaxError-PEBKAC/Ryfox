@@ -1,7 +1,7 @@
-From 4cffc87b7045e7ccbb9c6570e062f50ef1816758 Mon Sep 17 00:00:00 2001
+From c8a13d28e318be28ec285c5228329d241a58c1c6 Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Wed, 12 Aug 2026 22:32:40 -0700
-Subject: [PATCH 09/10] ducksteps: credit Mozilla and SyntaxError-PEBKAC in
+Subject: [PATCH 09/12] ducksteps: credit Mozilla and SyntaxError-PEBKAC in
  About dialog, point What's new to changelog
 
 Reword the About dialog credit line to name both Mozilla (design) and
@@ -16,7 +16,7 @@ mozilla.org to the ducksteps changelog.
  3 files changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/browser/base/content/aboutDialog.xhtml b/browser/base/content/aboutDialog.xhtml
-index c64980810570..2b6b56ea532c 100644
+index 3ffd464b960a..b261f12a42ee 100644
 --- a/browser/base/content/aboutDialog.xhtml
 +++ b/browser/base/content/aboutDialog.xhtml
 @@ -126,6 +126,7 @@
@@ -41,10 +41,10 @@ index 25711ea79fe9..1be7a9632373 100644
    pref("app.update.url.manual", "https://www.mozilla.org/%LOCALE%/firefox/new?reason=manual-update");
    pref("app.update.url.details", "https://www.mozilla.org/%LOCALE%/firefox/notes");
 diff --git a/browser/locales/en-US/browser/aboutDialog.ftl b/browser/locales/en-US/browser/aboutDialog.ftl
-index d266d15b6ce8..9a4eb320b782 100644
+index d0357aa57a83..a944602b2d73 100644
 --- a/browser/locales/en-US/browser/aboutDialog.ftl
 +++ b/browser/locales/en-US/browser/aboutDialog.ftl
-@@ -61,7 +61,7 @@ aboutdialog-submit-feedback = Submit Feedback
+@@ -78,7 +78,7 @@ aboutdialog-submit-feedback = Submit Feedback
  
  community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-short-name }</label> is a <label data-l10n-name="community-exp-creditsLink">global community</label> working together to keep the Web open, public and accessible to all.
  
@@ -54,5 +54,5 @@ index d266d15b6ce8..9a4eb320b782 100644
  helpus = Want to help? <label data-l10n-name="helpus-donateLink">Make a donation</label> or <label data-l10n-name="helpus-getInvolvedLink">get involved!</label>
  
 -- 
-2.52.0.windows.1
+2.49.0.windows.1
 

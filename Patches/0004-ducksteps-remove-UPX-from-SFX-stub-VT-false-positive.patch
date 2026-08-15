@@ -1,7 +1,7 @@
-From 0cbfdfe1ff97f34495401f6dcaebc90a8fa0eddd Mon Sep 17 00:00:00 2001
+From c0fcadead9cf27d1a24a81120da5f8a65e5e0fa9 Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Wed, 29 Apr 2026 17:36:56 -0700
-Subject: [PATCH 04/10] ducksteps: remove UPX from SFX stub (VT false positive
+Subject: [PATCH 04/12] ducksteps: remove UPX from SFX stub (VT false positive
  fix)
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH 04/10] ducksteps: remove UPX from SFX stub (VT false positive
  1 file changed, 5 insertions(+), 24 deletions(-)
 
 diff --git a/python/mozbuild/mozbuild/action/exe_7z_archive.py b/python/mozbuild/mozbuild/action/exe_7z_archive.py
-index b00ec662e71d..c9a03bbcc6f8 100644
+index fc490157f91c..d6046dffac1c 100644
 --- a/python/mozbuild/mozbuild/action/exe_7z_archive.py
 +++ b/python/mozbuild/mozbuild/action/exe_7z_archive.py
 @@ -20,27 +20,10 @@ def archive_exe(pkg_dir, tagfile, sfx_package, package, use_upx):
@@ -44,7 +44,7 @@ index b00ec662e71d..c9a03bbcc6f8 100644
  
          try:
              sevenz = buildconfig.config.substs["7Z"]
-@@ -88,6 +71,4 @@ def main(args):
+@@ -86,6 +69,4 @@ def main(args):
  
  
  if __name__ == "__main__":
@@ -54,5 +54,5 @@ index b00ec662e71d..c9a03bbcc6f8 100644
 +    sys.exit(main(sys.argv[1:]))
 \ No newline at end of file
 -- 
-2.52.0.windows.1
+2.49.0.windows.1
 

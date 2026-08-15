@@ -1,21 +1,21 @@
-From c60b863e5bdf6f9c58c2e179ead12ee9e860cf01 Mon Sep 17 00:00:00 2001
+From a97fddfcc24ff84af8da68d663c1df39ca7347d2 Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Mon, 13 Apr 2026 15:39:23 -0700
-Subject: [PATCH 02/10] Custom PGO training: replace Mozilla default workload
+Subject: [PATCH 02/12] Custom PGO training: replace Mozilla default workload
  with realistic browsing corpus
 
 ---
- build/pgo/profileserver.py       |  36 +-
+ build/pgo/profileserver.py       |  39 ++-
  pgo_training.py                  | 557 +++++++++++++++++++++++++++++++
  remote/marionette/server.sys.mjs |   2 +-
- 3 files changed, 593 insertions(+), 2 deletions(-)
+ 3 files changed, 593 insertions(+), 5 deletions(-)
  create mode 100644 pgo_training.py
 
 diff --git a/build/pgo/profileserver.py b/build/pgo/profileserver.py
-index 6017810c873f..b984bf821331 100755
+index a23e879dfdc4..63d4c9c7923b 100755
 --- a/build/pgo/profileserver.py
 +++ b/build/pgo/profileserver.py
-@@ -9,6 +9,7 @@ import json
+@@ -8,6 +8,7 @@ import glob
  import os
  import subprocess
  import sys
@@ -23,7 +23,7 @@ index 6017810c873f..b984bf821331 100755
  
  import mozcrash
  from mozbuild.base import BinaryNotFoundException, MozbuildObject
-@@ -123,6 +124,11 @@ if __name__ == "__main__":
+@@ -165,6 +166,11 @@ if __name__ == "__main__":
                  v = v.format(**interpolation)
              prefs[k] = Preferences.cast(v)
  
@@ -35,7 +35,7 @@ index 6017810c873f..b984bf821331 100755
          profile = FirefoxProfile(
              profile=profilePath,
              preferences=prefs,
-@@ -174,6 +180,19 @@ if __name__ == "__main__":
+@@ -218,6 +224,19 @@ if __name__ == "__main__":
              get_crashreports(profilePath, name="Profile initialization")
              sys.exit(ret)
  
@@ -55,11 +55,14 @@ index 6017810c873f..b984bf821331 100755
          jarlog = os.getenv("JARLOG_FILE")
          if jarlog:
              env["MOZ_JAR_LOG_FILE"] = os.path.abspath(jarlog)
-@@ -185,7 +204,12 @@ if __name__ == "__main__":
+@@ -229,10 +248,12 @@ if __name__ == "__main__":
              process_args["logfile"] = os.path.join(
                  env["UPLOAD_PATH"], "profile-run-2.log"
              )
--        cmdargs = ["http://localhost:%d/index.html" % PORT]
+-        cmdargs = [
+-            "http://localhost:%d/index.html?extendedCorpus=%s"
+-            % (PORT, str(has_extended_corpus).lower())
+-        ]
 +
 +        # -- ducksteps: custom PGO training workload --
 +        # Launch with Marionette enabled, sitting on about:blank.
@@ -69,7 +72,7 @@ index 6017810c873f..b984bf821331 100755
          runner = FirefoxRunner(
              profile=profile,
              binary=binary,
-@@ -194,7 +218,17 @@ if __name__ == "__main__":
+@@ -241,7 +262,17 @@ if __name__ == "__main__":
              process_args=process_args,
          )
          runner.start(debug_args=debug_args, interactive=interactive)
@@ -85,8 +88,8 @@ index 6017810c873f..b984bf821331 100755
          ret = runner.wait()
 +
          sp3_httpd.stop()
-         httpd.stop()
-         if ret:
+         if has_extended_corpus:
+             js3_httpd.stop()
 diff --git a/pgo_training.py b/pgo_training.py
 new file mode 100644
 index 000000000000..f780a79ba2b9
@@ -651,7 +654,7 @@ index 000000000000..f780a79ba2b9
 +    except Exception:
 +        pass  # connection drops during quit — expected
 diff --git a/remote/marionette/server.sys.mjs b/remote/marionette/server.sys.mjs
-index fb05328295c6..f9330e020445 100644
+index 5e0c63f90e85..5770cff8aa4f 100644
 --- a/remote/marionette/server.sys.mjs
 +++ b/remote/marionette/server.sys.mjs
 @@ -81,7 +81,7 @@ export class TCPListener {
@@ -664,5 +667,5 @@ index fb05328295c6..f9330e020445 100644
  
          // Since PollPromise doesn't throw when timeout expires,
 -- 
-2.52.0.windows.1
+2.49.0.windows.1
 

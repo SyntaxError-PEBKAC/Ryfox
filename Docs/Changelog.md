@@ -1,3 +1,85 @@
+## [153.0] (15/August/2026)
+
+⛐ It's the "twenty highs, thirty-five mediums, eight who cares" release!
+
+🔄 Updated to Firefox ESR 153.0. ducksteps: resync stub installer CSS with ESR 153 markup; ducksteps: fix About dialog wordmark overlap on ESR 153; ducksteps: fix installer wizard bitmap artifacts; ducksteps: credit Mozilla and SyntaxError-PEBKAC in About dialog, point What's new to changelog; ducksteps PGO: remove video fullscreen, Speedometer dwell -15s, corpus tweaks; ducksteps PGO: fullscreen video, airbnb popup fix, librespeed retry, speedometer dwell bump, duck.ai submit fix; ducksteps PGO: corpus updates — duckai behavior, speedtest fixes, dwell bumps; Remove stale Marionette PGO script, superseded by background.js; ducksteps: remove UPX from SFX stub (VT false positive fix); ducksteps: WebExtension PGO training + profileserver patches; Custom PGO training: replace Mozilla default workload with realistic browsing corpus; ducksteps: branding + patchset.
+
+🛡️ Addressed 63 CVEs from [Mozilla Foundation Security Advisory 2026-68](https://www.mozilla.org/en-US/security/advisories/mfsa2026-68/) (July 21, 2026). Sixty-three CVEs down this round — 20 high, 35 moderate, 8 low — which is a lot of squashing for one person and a build script to do on a Friday. Nothing here is the kind of headline zero-day that gets its own blog post, but 20 highs is still 20 highs, and "moderate" is doing a lot of load-bearing work in that middle chunk. As usual the move is to just update rather than trying to guess which ones actually apply to your setup — go restart the browser, you'll live.
+
+High severity:
+
+- **[CVE-2026-16349](https://www.cve.org/CVERecord?id=CVE-2026-16349)** Same-origin policy bypass in the DOM: Navigation component
+- **[CVE-2026-16350](https://www.cve.org/CVERecord?id=CVE-2026-16350)** Incorrect boundary conditions in the Audio/Video: cubeb component
+- **[CVE-2026-16362](https://www.cve.org/CVERecord?id=CVE-2026-16362)** Use-after-free in the WebRTC: Audio/Video component
+- **[CVE-2026-16351](https://www.cve.org/CVERecord?id=CVE-2026-16351)** Sandbox escape due to use-after-free in the DOM: Navigation component
+- **[CVE-2026-16352](https://www.cve.org/CVERecord?id=CVE-2026-16352)** Sandbox escape due to use-after-free in the Disability Access APIs component
+- **[CVE-2026-16363](https://www.cve.org/CVERecord?id=CVE-2026-16363)** JIT miscompilation in the JavaScript: WebAssembly component
+- **[CVE-2026-16364](https://www.cve.org/CVERecord?id=CVE-2026-16364)** Incorrect boundary conditions in the Audio/Video: Playback component
+- **[CVE-2026-16365](https://www.cve.org/CVERecord?id=CVE-2026-16365)** Privilege escalation in the DOM: Workers component
+- **[CVE-2026-16366](https://www.cve.org/CVERecord?id=CVE-2026-16366)** Privilege escalation in the DOM: Navigation component
+- **[CVE-2026-16353](https://www.cve.org/CVERecord?id=CVE-2026-16353)** Invalid pointer in the DOM: Bindings (WebIDL) component
+- **[CVE-2026-16354](https://www.cve.org/CVERecord?id=CVE-2026-16354)** Information disclosure in the Graphics: ImageLib component
+- **[CVE-2026-16367](https://www.cve.org/CVERecord?id=CVE-2026-16367)** Sandbox escape due to invalid pointer in the Disability Access APIs component
+- **[CVE-2026-16368](https://www.cve.org/CVERecord?id=CVE-2026-16368)** Incorrect boundary conditions in the JavaScript: WebAssembly component
+- **[CVE-2026-16369](https://www.cve.org/CVERecord?id=CVE-2026-16369)** Integer overflow in the JavaScript: WebAssembly component
+- **[CVE-2026-16355](https://www.cve.org/CVERecord?id=CVE-2026-16355)** JIT miscompilation in the JavaScript Engine: JIT component
+- **[CVE-2026-16356](https://www.cve.org/CVERecord?id=CVE-2026-16356)** Sandbox escape due to use-after-free in the Disability Access APIs component
+- **[CVE-2026-16357](https://www.cve.org/CVERecord?id=CVE-2026-16357)** Incorrect boundary conditions in the Graphics component
+- **[CVE-2026-16411](https://www.cve.org/CVERecord?id=CVE-2026-16411)** Memory safety bugs fixed in Firefox 153
+- **[CVE-2026-16412](https://www.cve.org/CVERecord?id=CVE-2026-16412)** Memory safety bugs fixed in Firefox ESR 140.13 and Firefox 153
+- **[CVE-2026-16360](https://www.cve.org/CVERecord?id=CVE-2026-16360)** Memory safety bugs fixed in Firefox ESR 115.38, Firefox ESR 140.13 and Firefox 153
+
+Moderate severity:
+
+- **[CVE-2026-16370](https://www.cve.org/CVERecord?id=CVE-2026-16370)** Mitigation bypass in the DOM: Networking component
+- **[CVE-2026-16371](https://www.cve.org/CVERecord?id=CVE-2026-16371)** Privilege escalation in the DOM: Navigation component
+- **[CVE-2026-16372](https://www.cve.org/CVERecord?id=CVE-2026-16372)** Privilege escalation in the DOM: Content Processes component
+- **[CVE-2026-16373](https://www.cve.org/CVERecord?id=CVE-2026-16373)** Information disclosure in the Privacy component in Firefox for Android
+- **[CVE-2026-16374](https://www.cve.org/CVERecord?id=CVE-2026-16374)** Information disclosure in the Framework component in DevTools
+- **[CVE-2026-16375](https://www.cve.org/CVERecord?id=CVE-2026-16375)** Site isolation issue in the Networking: HTTP component
+- **[CVE-2026-16376](https://www.cve.org/CVERecord?id=CVE-2026-16376)** Denial-of-service in the Graphics: WebGPU component
+- **[CVE-2026-16377](https://www.cve.org/CVERecord?id=CVE-2026-16377)** Mitigation bypass in the PDF Viewer component
+- **[CVE-2026-16378](https://www.cve.org/CVERecord?id=CVE-2026-16378)** Other issue in the DOM: Copy & Paste and Drag & Drop component
+- **[CVE-2026-16379](https://www.cve.org/CVERecord?id=CVE-2026-16379)** Privilege escalation in the DOM: Content Processes component
+- **[CVE-2026-16358](https://www.cve.org/CVERecord?id=CVE-2026-16358)** Site isolation issue in the Graphics: WebRender component
+- **[CVE-2026-16380](https://www.cve.org/CVERecord?id=CVE-2026-16380)** Mitigation bypass in the Networking component
+- **[CVE-2026-16381](https://www.cve.org/CVERecord?id=CVE-2026-16381)** Same-origin policy bypass in the Networking: DNS component
+- **[CVE-2026-16382](https://www.cve.org/CVERecord?id=CVE-2026-16382)** Mitigation bypass in the DOM: Service Workers component
+- **[CVE-2026-16383](https://www.cve.org/CVERecord?id=CVE-2026-16383)** Mitigation bypass in the DOM: Networking component
+- **[CVE-2026-16384](https://www.cve.org/CVERecord?id=CVE-2026-16384)** Information disclosure due to uninitialized memory in the Graphics: WebGPU component
+- **[CVE-2026-16385](https://www.cve.org/CVERecord?id=CVE-2026-16385)** Information disclosure due to uninitialized memory in the Graphics: WebGPU component
+- **[CVE-2026-16386](https://www.cve.org/CVERecord?id=CVE-2026-16386)** Information disclosure due to uninitialized memory in the Graphics: WebGPU component
+- **[CVE-2026-16387](https://www.cve.org/CVERecord?id=CVE-2026-16387)** Site isolation issue in the Networking component
+- **[CVE-2026-16388](https://www.cve.org/CVERecord?id=CVE-2026-16388)** Sandbox escape in the DOM: Networking component
+- **[CVE-2026-16389](https://www.cve.org/CVERecord?id=CVE-2026-16389)** Incorrect boundary conditions, integer overflow in the Libraries component in NSS
+- **[CVE-2026-16390](https://www.cve.org/CVERecord?id=CVE-2026-16390)** Mitigation bypass in the Enterprise Policies component
+- **[CVE-2026-16391](https://www.cve.org/CVERecord?id=CVE-2026-16391)** Information disclosure in the Storage: IndexedDB component
+- **[CVE-2026-16392](https://www.cve.org/CVERecord?id=CVE-2026-16392)** JIT miscompilation in the JavaScript Engine: JIT component
+- **[CVE-2026-16393](https://www.cve.org/CVERecord?id=CVE-2026-16393)** Incorrect boundary conditions in the Graphics: WebGPU component
+- **[CVE-2026-16359](https://www.cve.org/CVERecord?id=CVE-2026-16359)** Incorrect boundary conditions in the Audio/Video: GMP component
+- **[CVE-2026-16394](https://www.cve.org/CVERecord?id=CVE-2026-16394)** Mitigation bypass in the DOM: Security component
+- **[CVE-2026-16395](https://www.cve.org/CVERecord?id=CVE-2026-16395)** Integer overflow in the Audio/Video component
+- **[CVE-2026-16396](https://www.cve.org/CVERecord?id=CVE-2026-16396)** Privilege escalation in WebExtensions
+- **[CVE-2026-16397](https://www.cve.org/CVERecord?id=CVE-2026-16397)** Clickjacking issue in the WebExtensions component in Firefox for Android
+- **[CVE-2026-16398](https://www.cve.org/CVERecord?id=CVE-2026-16398)** Site isolation issue in the Graphics component
+- **[CVE-2026-16399](https://www.cve.org/CVERecord?id=CVE-2026-16399)** Site isolation issue in the DOM: Navigation component
+- **[CVE-2026-16400](https://www.cve.org/CVERecord?id=CVE-2026-16400)** Information disclosure in the DOM: Security component
+- **[CVE-2026-16401](https://www.cve.org/CVERecord?id=CVE-2026-16401)** Privilege escalation in the Data Loss Prevention component
+- **[CVE-2026-16402](https://www.cve.org/CVERecord?id=CVE-2026-16402)** Integer overflow in the Graphics: ImageLib component
+
+Low severity:
+
+- **[CVE-2026-16403](https://www.cve.org/CVERecord?id=CVE-2026-16403)** Spoofing issue in the Address Bar component
+- **[CVE-2026-16404](https://www.cve.org/CVERecord?id=CVE-2026-16404)** Spoofing issue in Firefox for Android
+- **[CVE-2026-16405](https://www.cve.org/CVERecord?id=CVE-2026-16405)** Information disclosure in the Networking: WebSockets component
+- **[CVE-2026-16406](https://www.cve.org/CVERecord?id=CVE-2026-16406)** Mitigation bypass in the Networking component
+- **[CVE-2026-16407](https://www.cve.org/CVERecord?id=CVE-2026-16407)** Mitigation bypass in the DOM: Service Workers component
+- **[CVE-2026-16408](https://www.cve.org/CVERecord?id=CVE-2026-16408)** Integer overflow in the Audio/Video: Playback component
+- **[CVE-2026-16409](https://www.cve.org/CVERecord?id=CVE-2026-16409)** Invalid pointer in the Security: PSM component
+- **[CVE-2026-16410](https://www.cve.org/CVERecord?id=CVE-2026-16410)** JIT miscompilation in the JavaScript Engine: JIT component
+
+---
+
 # Changelog
 
 All releases of ducksteps. Newest first.

@@ -1,4 +1,4 @@
-mk_add_options MOZ_OBJDIR=D:/ducksteps-obj/esr140-Legacy
+mk_add_options MOZ_OBJDIR=D:/ducksteps/ducksteps-obj/esr153-Legacy
 export CC=clang-cl
 export CXX=clang-cl
 export LINKER=lld-link

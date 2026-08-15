@@ -5,7 +5,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import glob
-import json
 import os
 import shutil
 import subprocess
@@ -14,7 +13,7 @@ import threading
 
 import mozcrash
 from mozbuild.base import BinaryNotFoundException, MozbuildObject
-from mozfile import TemporaryDirectory
+from mozfile import TemporaryDirectory, json
 from mozhttpd import MozHttpd
 from mozprofile import FirefoxProfile, Preferences
 from mozprofile.permissions import ServerLocations
@@ -66,8 +65,29 @@ def get_crashreports(directory, name=None):
     return rc
 
 
+class ProfileServerCLI(CLI):
+    def __init__(self, args=sys.argv[1:]):
+        CLI.__init__(self, args=args)
+
+    def add_options(self, parser):
+        CLI.add_options(self, parser)
+
+        # add profileserver options
+        parser.add_option(
+            "-e",
+            "--extended-corpus",
+            dest="extended_corpus_dir",
+            help="Directory of the optional extended corpus.",
+            metavar=None,
+            default=None,
+        )
+
+    def extended_corpus_dir(self):
+        return self.options.extended_corpus_dir
+
+
 if __name__ == "__main__":
-    cli = CLI()
+    cli = ProfileServerCLI()
     debug_args, interactive = cli.debugger_arguments()
     runner_args = cli.runner_args()
 
@@ -88,6 +108,9 @@ if __name__ == "__main__":
             sys.exit(1)
     binary = os.path.normpath(os.path.abspath(binary))
 
+    extended_corpus_dir = cli.extended_corpus_dir()
+    has_extended_corpus = extended_corpus_dir is not None
+
     path_mappings = {
         k: os.path.join(build.topsrcdir, v) for k, v in PATH_MAPPINGS.items()
     }
@@ -98,6 +121,8 @@ if __name__ == "__main__":
     )
     httpd.start(block=False)
 
+    # Speedometer3 must run in its own server. The benchmark assumes that it
+    # is in a root path, and will fail if it's not.
     sp3_httpd = MozHttpd(
         port=8000,
         docroot=os.path.join(
@@ -107,6 +132,23 @@ if __name__ == "__main__":
     )
     sp3_httpd.start(block=False)
     print("started SP3 server on port 8000")
+
+    if has_extended_corpus:
+        js3_dir = os.path.join(extended_corpus_dir, "JetStream")
+
+        if not os.path.exists(js3_dir):
+            print(f"Error: JetStream directory does not exist at {js3_dir}")
+            sys.exit(1)
+
+        # JetStream3 must run in its own server. The benchmark assumes that it
+        # is in a root path, and will fail if it's not.
+        js3_httpd = MozHttpd(
+            port=8001,
+            docroot=js3_dir,
+        )
+        js3_httpd.start(block=False)
+        print("started JS3 server on port 8001")
+
     locations = ServerLocations()
     locations.add_host(host="127.0.0.1", port=PORT, options="primary,privileged")
 
@@ -186,7 +228,7 @@ if __name__ == "__main__":
         runner = FirefoxRunner(
             profile=profile,
             binary=binary,
-            cmdargs=["data:text/html,<script>Quitter.quit()</script>"],
+            cmdargs=[f"http://localhost:{PORT}/quit.html"],
             env=env,
             process_args=process_args,
         )
@@ -200,6 +242,8 @@ if __name__ == "__main__":
                 with open(logfile) as f:
                     print(f.read())
             sp3_httpd.stop()
+            if has_extended_corpus:
+                js3_httpd.stop()
             httpd.stop()
             get_crashreports(profilePath, name="Profile initialization")
             sys.exit(ret)
@@ -244,6 +288,8 @@ if __name__ == "__main__":
 
         ret = runner.wait()
         sp3_httpd.stop()
+        if has_extended_corpus:
+            js3_httpd.stop()
         httpd.stop()
         if ret:
             print("Firefox exited with code %d during profiling" % ret)

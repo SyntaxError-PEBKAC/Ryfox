@@ -1,0 +1,237 @@
+From a6951ac77966df08e114eaaa50218f44ba2ec772 Mon Sep 17 00:00:00 2001
+From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
+Date: Fri, 14 Aug 2026 19:54:25 -0700
+Subject: [PATCH 12/12] ducksteps: resync stub installer CSS with ESR 153
+ markup
+
+Same staleness as the About dialog fix. Both stub installer stylesheets
+were verbatim copies of ESR 140's official files, with nothing ducksteps
+specific in either, and were never resynced.
+
+This one was a functional mismatch, not just a layout drift. The markup
+these style lives in browser/installer/windows/nsis/content/, outside
+branding, so the build already ships 153's HTML. In 153 that HTML dropped
+#text_column, #text_column_container, #header, #content, #installing and
+#footer, leaving only #background, #label, #progress_background,
+#progress_bar and #blurb. The 140 stylesheets spend most of their rules
+on elements that no longer exist, and hide #blurb, which 153 actually
+uses.
+
+The 140 rules also set "body { color: black }", which #header and
+#content inherited. Against our dark starfield bgstub.jpg that text was
+effectively invisible, so these pages were likely already broken on 140.
+It went unnoticed because we ship the full SEA installer
+(dist/install/sea/firefox-VERSION.en-US.win64.installer.exe), not the
+stub, so nothing built from these files reaches users.
+
+Resynced against 153's official files, which use white text and a
+centred layout. Note bgstub.jpg puts the duck in the left ~48% of the
+frame, and 153 centres its text, so the composition is worth a look if
+the stub installer is ever actually shipped. #background itself is styled
+by the non-branding stub_common.css and is unaffected by this change.
+---
+ .../stubinstaller/installing_page.css         | 75 +++++--------------
+ .../stubinstaller/profile_cleanup_page.css    | 66 ++++------------
+ 2 files changed, 33 insertions(+), 108 deletions(-)
+
+diff --git a/browser/branding/ducksteps/stubinstaller/installing_page.css b/browser/branding/ducksteps/stubinstaller/installing_page.css
+index 5704eb3b3e96..0e6bcc68f23f 100644
+--- a/browser/branding/ducksteps/stubinstaller/installing_page.css
++++ b/browser/branding/ducksteps/stubinstaller/installing_page.css
+@@ -3,63 +3,29 @@
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+ body {
+-  color: black;
+-}
+-
+-/*
+- * We want to treat the two pieces of text in the left column as one unit and
+-   center that unit vertically in the window. In order to make IE8 do that,
+-   we have to wrap the two bits of text in a container and make that a
+-   table-cell (which means we need an outer container that's display: table).
+-   So that's what this mess is doing.
+- */
+-#text_column {
+-  position: fixed;
+-  height: 100%;
+-  margin-left: 30px;
+-  width: 40%;
+-  display: table;
+-}
+-
+-#text_column_container {
+-  display: table-cell;
+-  vertical-align: middle;
+-  padding-top: 60px;
+-}
+-
+-#header {
+-  font-size: 24px;
+-  font-weight: 800;
+-  margin-top: 0;
+-}
+-
+-#content {
+-  font-size: 22px;
++  color: white;
+ }
+ 
+-#installing {
+-  position: fixed;
+-  right: 30px;
+-  bottom: 55%;
+-  margin-top: auto;
+-  margin-bottom: auto;
+-  width: 35%;
++#label,
++#progress_background,
++#blurb {
++  text-align: center;
++  margin: 20px 30px;
+ }
+ 
+ #label {
+-  color: white;
+-
+-  position: relative;
+-  top: 50px;
+-
+-  text-align: center;
+-  font-size: 20px;
++  font-size: 40px;
++  margin-top: 100px;
++  margin-bottom: 20px;
+ }
+ 
+ #progress_background {
+-  width: 100%;
+-  height: 20px;
+-  background-color: white;
++  margin: 0 auto;
++  width: 60%;
++  height: 24px;
++  background-color: #f5cbf6;
++  border-radius: 8px;
++  padding: 3px;
+ }
+ 
+ body.high-contrast #progress_background {
+@@ -70,18 +36,17 @@ body.high-contrast #progress_background {
+   margin: 0;
+   width: 0%;
+   height: 100%;
+-  background-color: #00AAFF;
++  background-color: #7543e3;
++  border-radius: 6px;
+ }
+ 
+ /* In high contrast mode, fill the entire progress bar with its border. */
+ body.high-contrast #progress_bar {
+   /* This border should be the height of progress_background. */
+-  border-top: 20px solid;
++  border-top: 24px solid;
+   box-sizing: border-box;
+ }
+ 
+-/* No blurb or footer for this layout. */
+-#blurb,
+-#footer {
+-  visibility: hidden;
++#blurb {
++  font-size: 20px;
+ }
+diff --git a/browser/branding/ducksteps/stubinstaller/profile_cleanup_page.css b/browser/branding/ducksteps/stubinstaller/profile_cleanup_page.css
+index a8dbad0e110e..07f8e31d09d2 100644
+--- a/browser/branding/ducksteps/stubinstaller/profile_cleanup_page.css
++++ b/browser/branding/ducksteps/stubinstaller/profile_cleanup_page.css
+@@ -3,73 +3,33 @@
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+ body {
+-  color: black;
+-}
+-
+-/*
+- * We want to treat the two pieces of text in the left column as one unit and
+-   center that unit vertically in the window. In order to make IE8 do that,
+-   we have to wrap the two bits of text in a container and make that a
+-   table-cell (which means we need an outer container that's display: table).
+-   So that's what this mess is doing.
+- */
+-#profileRefreshForm {
+-  position: fixed;
+-  height: 100%;
+-  margin-left: 30px;
+-  width: 40%;
+-  display: table;
+-}
+-
+-#profileRefreshContainer {
+-  display: table-cell;
+-  vertical-align: middle;
++  color: white;
+ }
+ 
++#header,
+ #refreshCheckboxContainer,
+ #refreshButtonContainer {
+-  margin-top: 20px;
++  text-align: center;
++  margin-left: 40px;
++  margin-right: 40px;
++  margin-bottom: 30px;
+ }
+ 
+ #header {
+-  font-size: 25px;
+-  font-weight: 600;
+-}
+-
+-#refreshCheckboxContainer {
+-  position: relative;
++  font-size: 35px;
++  font-weight: normal;
++  margin-top: 45px;
+ }
+ 
+ #refreshCheckbox {
+-  position: absolute;
+-  top: 1px;
++  vertical-align: middle;
+ }
+ 
+ #checkboxLabel {
+-  font-size: 14px;
+-  display: block;
+-}
+-
+-.checkboxLabel-ltr {
+-  margin-left: 25px;
+-}
+-
+-.checkboxLabel-rtl {
+-  margin-right: 25px;
++  font-size: 13px;
+ }
+ 
+ #refreshButton {
+-  padding: 8px 70px;
+-  font-size: 16px;
+-  background: #005ccc;
+-  color: white;
+-}
+-
+-body.normal-contrast #refreshButton {
+-  border: none;
+-}
+-
+-/* No footer for this layout. */
+-#footer {
+-  visibility: hidden;
++  padding: 8px 40px;
++  font-size: 15px;
+ }
+-- 
+2.49.0.windows.1
+

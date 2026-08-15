@@ -1,7 +1,7 @@
-From 620946547e10ef058e46971b7f803d88368be23d Mon Sep 17 00:00:00 2001
+From fbfd2c31bec6df5cf96dc8dc19678946c6ae84ee Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Wed, 29 Apr 2026 17:36:43 -0700
-Subject: [PATCH 03/10] ducksteps: WebExtension PGO training + profileserver
+Subject: [PATCH 03/12] ducksteps: WebExtension PGO training + profileserver
  patches
 
 ---
@@ -9,12 +9,12 @@ Subject: [PATCH 03/10] ducksteps: WebExtension PGO training + profileserver
  1 file changed, 59 insertions(+), 35 deletions(-)
 
 diff --git a/build/pgo/profileserver.py b/build/pgo/profileserver.py
-index b984bf821331..f094e9956192 100755
+index 63d4c9c7923b..f77f9b7e142d 100755
 --- a/build/pgo/profileserver.py
 +++ b/build/pgo/profileserver.py
-@@ -7,9 +7,10 @@
+@@ -6,9 +6,10 @@
+ 
  import glob
- import json
  import os
 +import shutil
  import subprocess
@@ -24,7 +24,7 @@ index b984bf821331..f094e9956192 100755
  
  import mozcrash
  from mozbuild.base import BinaryNotFoundException, MozbuildObject
-@@ -35,6 +36,11 @@ def get_crashreports(directory, name=None):
+@@ -34,6 +35,11 @@ def get_crashreports(directory, name=None):
      upload_path = os.environ.get("UPLOAD_PATH")
      if not upload_path:
          upload_path = os.environ.get("UPLOAD_DIR")
@@ -36,7 +36,7 @@ index b984bf821331..f094e9956192 100755
      if upload_path:
          # For automation, log the minidumps with stackwalk and get them moved to
          # the artifacts directory.
-@@ -67,6 +73,12 @@ if __name__ == "__main__":
+@@ -87,6 +93,12 @@ if __name__ == "__main__":
  
      build = MozbuildObject.from_environment()
  
@@ -49,7 +49,7 @@ index b984bf821331..f094e9956192 100755
      binary = runner_args.get("binary")
      if not binary:
          try:
-@@ -124,10 +136,19 @@ if __name__ == "__main__":
+@@ -166,10 +178,19 @@ if __name__ == "__main__":
                  v = v.format(**interpolation)
              prefs[k] = Preferences.cast(v)
  
@@ -73,7 +73,7 @@ index b984bf821331..f094e9956192 100755
  
          profile = FirefoxProfile(
              profile=profilePath,
-@@ -135,14 +156,17 @@ if __name__ == "__main__":
+@@ -177,14 +198,17 @@ if __name__ == "__main__":
              addons=[
                  os.path.join(
                      build.topsrcdir, "tools", "quitter", "quitter@mozilla.org.xpi"
@@ -93,7 +93,7 @@ index b984bf821331..f094e9956192 100755
          env["XPCOM_DEBUG_BREAK"] = "warn"
  
          # Ensure different pids write to different files
-@@ -180,19 +204,6 @@ if __name__ == "__main__":
+@@ -224,19 +248,6 @@ if __name__ == "__main__":
              get_crashreports(profilePath, name="Profile initialization")
              sys.exit(ret)
  
@@ -113,7 +113,7 @@ index b984bf821331..f094e9956192 100755
          jarlog = os.getenv("JARLOG_FILE")
          if jarlog:
              env["MOZ_JAR_LOG_FILE"] = os.path.abspath(jarlog)
-@@ -205,11 +216,12 @@ if __name__ == "__main__":
+@@ -249,11 +260,12 @@ if __name__ == "__main__":
                  env["UPLOAD_PATH"], "profile-run-2.log"
              )
  
@@ -131,7 +131,7 @@ index b984bf821331..f094e9956192 100755
          runner = FirefoxRunner(
              profile=profile,
              binary=binary,
-@@ -218,17 +230,19 @@ if __name__ == "__main__":
+@@ -262,17 +274,19 @@ if __name__ == "__main__":
              process_args=process_args,
          )
          runner.start(debug_args=debug_args, interactive=interactive)
@@ -157,9 +157,9 @@ index b984bf821331..f094e9956192 100755
 +
 +        ret = runner.wait()
          sp3_httpd.stop()
-         httpd.stop()
-         if ret:
-@@ -274,13 +288,23 @@ if __name__ == "__main__":
+         if has_extended_corpus:
+             js3_httpd.stop()
+@@ -320,13 +334,23 @@ if __name__ == "__main__":
                  sys.exit(1)
  
              merged_profdata = "merged.profdata"
@@ -184,7 +184,7 @@ index b984bf821331..f094e9956192 100755
              if rc != 0:
                  print("INFRA-ERROR: Failed to merge profile data. Corrupt profile?")
                  # exit with TBPL_RETRY
-@@ -293,4 +317,4 @@ if __name__ == "__main__":
+@@ -339,4 +363,4 @@ if __name__ == "__main__":
  
              if os.path.getsize(merged_profdata) == 0:
                  print(merged_profdata, "was created but it is empty", file=sys.stderr)
@@ -192,5 +192,5 @@ index b984bf821331..f094e9956192 100755
 +                sys.exit(1)
 \ No newline at end of file
 -- 
-2.52.0.windows.1
+2.49.0.windows.1
 

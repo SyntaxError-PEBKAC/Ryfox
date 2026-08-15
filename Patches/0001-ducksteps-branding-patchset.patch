@@ -1,11 +1,10 @@
-From 571e7dc558e6c6f022fbf34b75722c6492e6b31f Mon Sep 17 00:00:00 2001
+From 74674d4f6e12c834d14d5a19699fae1190d3623e Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Fri, 13 Feb 2026 12:50:10 -0700
-Subject: [PATCH 01/10] ducksteps: branding + patchset
+Subject: [PATCH 01/12] ducksteps: branding + patchset
 
 ---
  browser/app/application.ini                   |   8 ++
- browser/app/moz.build                         |   2 +-
  browser/app/nsBrowserApp.cpp                  |   8 +-
  browser/branding/ducksteps/LICENSE            |  10 ++
  .../ducksteps/PrivateBrowsing_150.png         | Bin 0 -> 36481 bytes
@@ -73,20 +72,12 @@ Subject: [PATCH 01/10] ducksteps: branding + patchset
  browser/branding/ducksteps/wizHeaderRTL.bmp   | Bin 0 -> 25818 bytes
  browser/branding/ducksteps/wizWatermark.bmp   | Bin 0 -> 154542 bytes
  browser/installer/windows/nsis/setup.ico      | Bin 0 -> 105143 bytes
- .../webrender_api/src/display_item_cache.rs   |   2 +-
- gfx/wr/webrender_api/src/display_list.rs      |  24 ++---
- gfx/wr/webrender_api/src/image.rs             |   2 +-
- .../rust/l10nregistry-rs/src/registry/mod.rs  |   4 +-
  other-licenses/7zstub/firefox/7zSD.Win32.sfx  | Bin 192512 -> 236544 bytes
  other-licenses/7zstub/firefox/setup.ico       | Bin 61577 -> 105143 bytes
  .../mozbuild/action/exe_7z_archive.py         |   6 +-
- servo/components/selectors/parser.rs          |  12 +--
- servo/components/servo_arc/lib.rs             |   6 +-
- .../components/telemetry/dap/ffi/src/lib.rs   |   2 +-
- .../minidump-analyzer/src/windows/wintrust.rs |   2 +-
  tools/upx-after-package.ps1                   |  26 ++++++
  xpcom/rust/nsstring/src/lib.rs                |  28 +++---
- 82 files changed, 549 insertions(+), 47 deletions(-)
+ 73 files changed, 521 insertions(+), 19 deletions(-)
  create mode 100644 browser/app/application.ini
  create mode 100644 browser/branding/ducksteps/LICENSE
  create mode 100644 browser/branding/ducksteps/PrivateBrowsing_150.png
@@ -171,40 +162,29 @@ index 000000000000..8b60c8dfe9ea
 +RemotingName=ducksteps
 +RemotingUUID={f3b9c2d4-7a1e-4b6a-9f2e-8c4d1a0b6e72}
 \ No newline at end of file
-diff --git a/browser/app/moz.build b/browser/app/moz.build
-index f41ce92556bb..05e6e47736db 100644
---- a/browser/app/moz.build
-+++ b/browser/app/moz.build
-@@ -173,4 +173,4 @@ for icon in ("firefox", "document", "newwindow", "newtab", "pbmode", "document_p
-         TOPSRCDIR,
-         CONFIG["MOZ_BRANDING_DIRECTORY"],
-         icon,
--    )
-+    )
-\ No newline at end of file
 diff --git a/browser/app/nsBrowserApp.cpp b/browser/app/nsBrowserApp.cpp
-index a85fdbfebe0f..b2daecc13339 100644
+index 4c5982c056fd..b4ad503de200 100644
 --- a/browser/app/nsBrowserApp.cpp
 +++ b/browser/app/nsBrowserApp.cpp
-@@ -131,7 +131,7 @@ static MOZ_FORMAT_PRINTF(1, 2) void Output(const char* fmt, ...) {
-     decltype(MessageBoxW)* messageBoxW =
-         (decltype(MessageBoxW)*)GetProcAddress(user32, "MessageBoxW");
-     if (messageBoxW) {
--      messageBoxW(nullptr, wide_msg, L"Firefox",
-+      messageBoxW(nullptr, wide_msg, L"ducksteps",
-                   MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
-     }
-     FreeLibrary(user32);
-@@ -161,7 +161,7 @@ static bool IsArg(const char* arg, const char* s) {
- MOZ_RUNINIT Bootstrap::UniquePtr gBootstrap;
+@@ -142,7 +142,7 @@ static MOZ_FORMAT_PRINTF(1, 2) void Output(const char* fmt, ...) {
+       decltype(MessageBoxW)* messageBoxW =
+           (decltype(MessageBoxW)*)GetProcAddress(user32, "MessageBoxW");
+       if (messageBoxW) {
+-        messageBoxW(nullptr, wide_msg, L"Firefox",
++        messageBoxW(nullptr, wide_msg, L"ducksteps",
+                     MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
+       } else {
+         showMessageBox = false;
+@@ -198,7 +198,7 @@ static bool HasFlag(int argc, char* argv[], const char* s) {
+ constinit Bootstrap::UniquePtr gBootstrap;
  
  static int do_main(int argc, char* argv[], char* envp[]) {
 -  // Allow firefox.exe to launch XULRunner apps via -app <application.ini>
 +  // Allow ducksteps.exe to launch XULRunner apps via -app <application.ini>
    // Note that -app must be the *first* argument.
    const char* appDataFile = getenv("XUL_APP_FILE");
-   if ((!appDataFile || !*appDataFile) && (argc > 1 && IsArg(argv[1], "app"))) {
-@@ -363,7 +363,7 @@ int main(int argc, char* argv[], char* envp[]) {
+   if ((!appDataFile || !*appDataFile) && (argc > 1 && IsFlag(argv[1], "app"))) {
+@@ -432,7 +432,7 @@ int main(int argc, char* argv[], char* envp[]) {
  #  endif
  #  if defined(XP_WIN)
      // Ideally, we would be able to set our DPI awareness in
@@ -213,7 +193,7 @@ index a85fdbfebe0f..b2daecc13339 100644
      // user32.dll gets loaded, which would be incompatible with Win32k Lockdown
      //
      // MSDN says that it's allowed-but-not-recommended to initialize DPI
-@@ -430,7 +430,7 @@ int main(int argc, char* argv[], char* envp[]) {
+@@ -499,7 +499,7 @@ int main(int argc, char* argv[], char* envp[]) {
  
  #if defined(XP_WIN)
  
@@ -135945,134 +135925,6 @@ OP+Drbs<p}=zy1$-Q8YvV
 literal 0
 HcmV?d00001
 
-diff --git a/gfx/wr/webrender_api/src/display_item_cache.rs b/gfx/wr/webrender_api/src/display_item_cache.rs
-index ff0f6dda84eb..85f72718a636 100644
---- a/gfx/wr/webrender_api/src/display_item_cache.rs
-+++ b/gfx/wr/webrender_api/src/display_item_cache.rs
-@@ -17,7 +17,7 @@ impl CachedDisplayItem {
-         &self.item
-     }
- 
--    pub fn data_as_item_range<T>(&self) -> ItemRange<T> {
-+    pub fn data_as_item_range<T>(&self) -> ItemRange<'_, T> {
-         ItemRange::new(&self.data)
-     }
- }
-diff --git a/gfx/wr/webrender_api/src/display_list.rs b/gfx/wr/webrender_api/src/display_list.rs
-index 651d4956774f..48f07309905e 100644
---- a/gfx/wr/webrender_api/src/display_list.rs
-+++ b/gfx/wr/webrender_api/src/display_list.rs
-@@ -230,7 +230,7 @@ pub struct DisplayListWithCache {
- }
- 
- impl DisplayListWithCache {
--    pub fn iter(&self) -> BuiltDisplayListIter {
-+    pub fn iter(&self) -> BuiltDisplayListIter<'_> {
-         self.display_list.iter_with_cache(&self.cache)
-     }
- 
-@@ -508,31 +508,31 @@ impl<'a, 'b> DisplayItemRef<'a, 'b> {
-        self.iter.current_item()
-     }
- 
--    pub fn clip_chain_items(&self) -> ItemRange<di::ClipId> {
-+    pub fn clip_chain_items(&self) -> ItemRange<'_, di::ClipId> {
-         self.iter.cur_clip_chain_items
-     }
- 
--    pub fn points(&self) -> ItemRange<LayoutPoint> {
-+    pub fn points(&self) -> ItemRange<'_, LayoutPoint> {
-         self.iter.cur_points
-     }
- 
--    pub fn glyphs(&self) -> ItemRange<GlyphInstance> {
-+    pub fn glyphs(&self) -> ItemRange<'_, GlyphInstance> {
-         self.iter.glyphs()
-     }
- 
--    pub fn gradient_stops(&self) -> ItemRange<di::GradientStop> {
-+    pub fn gradient_stops(&self) -> ItemRange<'_, di::GradientStop> {
-         self.iter.gradient_stops()
-     }
- 
--    pub fn filters(&self) -> ItemRange<di::FilterOp> {
-+    pub fn filters(&self) -> ItemRange<'_, di::FilterOp> {
-         self.iter.cur_filters
-     }
- 
--    pub fn filter_datas(&self) -> &Vec<TempFilterData> {
-+    pub fn filter_datas(&self) -> &Vec<TempFilterData<'_>> {
-         &self.iter.cur_filter_data
-     }
- 
--    pub fn filter_primitives(&self) -> ItemRange<di::FilterPrimitive> {
-+    pub fn filter_primitives(&self) -> ItemRange<'_, di::FilterPrimitive> {
-         self.iter.cur_filter_primitives
-     }
- }
-@@ -607,11 +607,11 @@ impl BuiltDisplayList {
-         self.descriptor.total_spatial_nodes
-     }
- 
--    pub fn iter(&self) -> BuiltDisplayListIter {
-+    pub fn iter(&self) -> BuiltDisplayListIter<'_> {
-         BuiltDisplayListIter::new(self.items_data(), None)
-     }
- 
--    pub fn cache_data_iter(&self) -> BuiltDisplayListIter {
-+    pub fn cache_data_iter(&self) -> BuiltDisplayListIter<'_> {
-         BuiltDisplayListIter::new(self.cache_data(), None)
-     }
- 
-@@ -785,11 +785,11 @@ impl<'a> BuiltDisplayListIter<'a> {
-         }
-     }
- 
--    pub fn glyphs(&self) -> ItemRange<GlyphInstance> {
-+    pub fn glyphs(&self) -> ItemRange<'_, GlyphInstance> {
-         self.cached_item_range_or(self.cur_glyphs)
-     }
- 
--    pub fn gradient_stops(&self) -> ItemRange<di::GradientStop> {
-+    pub fn gradient_stops(&self) -> ItemRange<'_, di::GradientStop> {
-         self.cached_item_range_or(self.cur_stops)
-     }
- 
-diff --git a/gfx/wr/webrender_api/src/image.rs b/gfx/wr/webrender_api/src/image.rs
-index f7048054f319..d89f27d94b81 100644
---- a/gfx/wr/webrender_api/src/image.rs
-+++ b/gfx/wr/webrender_api/src/image.rs
-@@ -114,7 +114,7 @@ pub trait ExternalImageHandler {
-     /// Lock the external image. Then, WR could start to read the image content.
-     /// The WR client should not change the image content until the unlock()
-     /// call.
--    fn lock(&mut self, key: ExternalImageId, channel_index: u8) -> ExternalImage;
-+    fn lock(&mut self, key: ExternalImageId, channel_index: u8) -> ExternalImage<'_>;
-     /// Unlock the external image. WR should not read the image content
-     /// after this call.
-     fn unlock(&mut self, key: ExternalImageId, channel_index: u8);
-diff --git a/intl/l10n/rust/l10nregistry-rs/src/registry/mod.rs b/intl/l10n/rust/l10nregistry-rs/src/registry/mod.rs
-index c342aa55aa86..a18323c30090 100644
---- a/intl/l10n/rust/l10nregistry-rs/src/registry/mod.rs
-+++ b/intl/l10n/rust/l10nregistry-rs/src/registry/mod.rs
-@@ -213,7 +213,7 @@ impl<P, B> L10nRegistry<P, B> {
-         Ok(())
-     }
- 
--    pub fn try_borrow_metasources(&self) -> Result<Ref<MetaSources>, L10nRegistrySetupError> {
-+    pub fn try_borrow_metasources(&self) -> Result<Ref<'_, MetaSources>, L10nRegistrySetupError> {
-         self.shared
-             .metasources
-             .try_borrow()
-@@ -222,7 +222,7 @@ impl<P, B> L10nRegistry<P, B> {
- 
-     pub fn try_borrow_metasources_mut(
-         &self,
--    ) -> Result<RefMut<MetaSources>, L10nRegistrySetupError> {
-+    ) -> Result<RefMut<'_, MetaSources>, L10nRegistrySetupError> {
-         self.shared
-             .metasources
-             .try_borrow_mut()
 diff --git a/other-licenses/7zstub/firefox/7zSD.Win32.sfx b/other-licenses/7zstub/firefox/7zSD.Win32.sfx
 index 4d529b0433da37b6b0f6e3322d775c7e2543c41c..2cf47358cb3eb5e55ebb1d50a885e7a3eca43198 100644
 GIT binary patch
@@ -142142,7 +141994,7 @@ zuSejz5qNz7TsLm7y<U&ND=`AE4}e!<8eezf^$1)y0<RB%>&ET1*Xt2@B}U-&0q{yp
 i<Lgem9)asd;Qs^vc`M7eZa|d)0000<MNUMnLSTZ8oP)ps
 
 diff --git a/python/mozbuild/mozbuild/action/exe_7z_archive.py b/python/mozbuild/mozbuild/action/exe_7z_archive.py
-index b0d35be2bf88..b00ec662e71d 100644
+index 05c5f448a577..fc490157f91c 100644
 --- a/python/mozbuild/mozbuild/action/exe_7z_archive.py
 +++ b/python/mozbuild/mozbuild/action/exe_7z_archive.py
 @@ -31,7 +31,9 @@ def archive_exe(pkg_dir, tagfile, sfx_package, package, use_upx):
@@ -142156,127 +142008,12 @@ index b0d35be2bf88..b00ec662e71d 100644
                      "-o",
                      final_sfx,
                      sfx_package,
-@@ -87,3 +89,5 @@ def main(args):
+@@ -85,3 +87,5 @@ def main(args):
  
  if __name__ == "__main__":
      sys.exit(main(sys.argv[1:]))
 +
 +
-diff --git a/servo/components/selectors/parser.rs b/servo/components/selectors/parser.rs
-index d62efed2d112..ee2c89bbcdf0 100644
---- a/servo/components/selectors/parser.rs
-+++ b/servo/components/selectors/parser.rs
-@@ -89,7 +89,7 @@ pub trait NonTSPseudoClass: Sized + ToCss {
- 
- /// Returns a Cow::Borrowed if `s` is already ASCII lowercase, and a
- /// Cow::Owned if `s` had to be converted into ASCII lowercase.
--fn to_ascii_lowercase(s: &str) -> Cow<str> {
-+fn to_ascii_lowercase(s: &str) -> Cow<'_, str> {
-     if let Some(first_uppercase) = s.bytes().position(|byte| byte >= b'A' && byte <= b'Z') {
-         let mut string = s.to_owned();
-         string[first_uppercase..].make_ascii_lowercase();
-@@ -978,7 +978,7 @@ impl<Impl: SelectorImpl> Selector<Impl> {
-     /// When a combinator is reached, the iterator will return None, and
-     /// next_sequence() may be called to continue to the next sequence.
-     #[inline]
--    pub fn iter(&self) -> SelectorIter<Impl> {
-+    pub fn iter(&self) -> SelectorIter<'_, Impl> {
-         SelectorIter {
-             iter: self.iter_raw_match_order(),
-             next_combinator: None,
-@@ -987,7 +987,7 @@ impl<Impl: SelectorImpl> Selector<Impl> {
- 
-     /// Same as `iter()`, but skips `RelativeSelectorAnchor` and its associated combinator.
-     #[inline]
--    pub fn iter_skip_relative_selector_anchor(&self) -> SelectorIter<Impl> {
-+    pub fn iter_skip_relative_selector_anchor(&self) -> SelectorIter<'_, Impl> {
-         if cfg!(debug_assertions) {
-             let mut selector_iter = self.iter_raw_parse_order_from(0);
-             assert!(
-@@ -1012,7 +1012,7 @@ impl<Impl: SelectorImpl> Selector<Impl> {
-     /// Returns an iterator over this selector in matching order (right-to-left),
-     /// skipping the rightmost |offset| Components.
-     #[inline]
--    pub fn iter_from(&self, offset: usize) -> SelectorIter<Impl> {
-+    pub fn iter_from(&self, offset: usize) -> SelectorIter<'_, Impl> {
-         let iter = self.0.slice()[offset..].iter();
-         SelectorIter {
-             iter,
-@@ -1036,7 +1036,7 @@ impl<Impl: SelectorImpl> Selector<Impl> {
-     /// Returns an iterator over the entire sequence of simple selectors and
-     /// combinators, in matching order (from right to left).
-     #[inline]
--    pub fn iter_raw_match_order(&self) -> slice::Iter<Component<Impl>> {
-+    pub fn iter_raw_match_order(&self) -> slice::Iter<'_, Component<Impl>> {
-         self.0.slice().iter()
-     }
- 
-@@ -1057,7 +1057,7 @@ impl<Impl: SelectorImpl> Selector<Impl> {
-     /// combinators, in parse order (from left to right), starting from
-     /// `offset`.
-     #[inline]
--    pub fn iter_raw_parse_order_from(&self, offset: usize) -> Rev<slice::Iter<Component<Impl>>> {
-+    pub fn iter_raw_parse_order_from(&self, offset: usize) -> Rev<slice::Iter<'_, Component<Impl>>> {
-         self.0.slice()[..self.len() - offset].iter().rev()
-     }
- 
-diff --git a/servo/components/servo_arc/lib.rs b/servo/components/servo_arc/lib.rs
-index 77eb5ac89a88..04367820827e 100644
---- a/servo/components/servo_arc/lib.rs
-+++ b/servo/components/servo_arc/lib.rs
-@@ -1060,7 +1060,7 @@ impl<A, B> ArcUnion<A, B> {
- 
-     /// Returns an enum representing a borrow of either A or B.
-     #[inline]
--    pub fn borrow(&self) -> ArcUnionBorrow<A, B> {
-+    pub fn borrow(&self) -> ArcUnionBorrow<'_, A, B> {
-         if self.is_first() {
-             let ptr = self.p.as_ptr() as *const ArcInner<A>;
-             let borrow = unsafe { ArcBorrow::from_ref(&(*ptr).data) };
-@@ -1097,7 +1097,7 @@ impl<A, B> ArcUnion<A, B> {
-     }
- 
-     /// Returns a borrow of the first type if applicable, otherwise `None`.
--    pub fn as_first(&self) -> Option<ArcBorrow<A>> {
-+    pub fn as_first(&self) -> Option<ArcBorrow<'_, A>> {
-         match self.borrow() {
-             ArcUnionBorrow::First(x) => Some(x),
-             ArcUnionBorrow::Second(_) => None,
-@@ -1105,7 +1105,7 @@ impl<A, B> ArcUnion<A, B> {
-     }
- 
-     /// Returns a borrow of the second type if applicable, otherwise None.
--    pub fn as_second(&self) -> Option<ArcBorrow<B>> {
-+    pub fn as_second(&self) -> Option<ArcBorrow<'_, B>> {
-         match self.borrow() {
-             ArcUnionBorrow::First(_) => None,
-             ArcUnionBorrow::Second(x) => Some(x),
-diff --git a/toolkit/components/telemetry/dap/ffi/src/lib.rs b/toolkit/components/telemetry/dap/ffi/src/lib.rs
-index 4ede8dd2b6f6..142066dfae75 100644
---- a/toolkit/components/telemetry/dap/ffi/src/lib.rs
-+++ b/toolkit/components/telemetry/dap/ffi/src/lib.rs
-@@ -142,7 +142,7 @@ impl Shardable for SumVecMeasurement<'_> {
-         let prio =
-             Prio3SumVec::new_sum_vec(NUM_AGGREGATORS, self.bits, self.value.len(), chunk_length)?;
- 
--        let measurement: Vec<u128> = self.value.iter().map(|e| (*e as u128)).collect();
-+        let measurement: Vec<u128> = self.value.iter().map(|e| *e as u128).collect();
-         let (public_share, input_shares) = prio.shard(&measurement, nonce)?;
- 
-         encode_prio3_shares(public_share, input_shares)
-diff --git a/toolkit/crashreporter/minidump-analyzer/src/windows/wintrust.rs b/toolkit/crashreporter/minidump-analyzer/src/windows/wintrust.rs
-index f4a995c8a365..40f430e0fad9 100644
---- a/toolkit/crashreporter/minidump-analyzer/src/windows/wintrust.rs
-+++ b/toolkit/crashreporter/minidump-analyzer/src/windows/wintrust.rs
-@@ -91,7 +91,7 @@ impl CATAdmin {
-     }
- 
-     /// Find the first catalog that contains the given hash.
--    pub fn catalog_from_hash(&self, hash: &mut [u8]) -> Option<CATInfo> {
-+    pub fn catalog_from_hash(&self, hash: &mut [u8]) -> Option<CATInfo<'_>> {
-         let ptr = unsafe {
-             CryptCATAdminEnumCatalogFromHash(
-                 self.0,
 diff --git a/tools/upx-after-package.ps1 b/tools/upx-after-package.ps1
 new file mode 100644
 index 000000000000..a543a1c5f943
@@ -142310,10 +142047,10 @@ index 000000000000..a543a1c5f943
 +  & $upx -q -t $t.FullName
 +}
 diff --git a/xpcom/rust/nsstring/src/lib.rs b/xpcom/rust/nsstring/src/lib.rs
-index 64d50df8fe91..647d871f1ea3 100644
+index 3347f962193b..b64f18f7c9ee 100644
 --- a/xpcom/rust/nsstring/src/lib.rs
 +++ b/xpcom/rust/nsstring/src/lib.rs
-@@ -205,54 +205,54 @@ macro_rules! string_like {
+@@ -206,54 +206,54 @@ macro_rules! string_like {
          /// This trait is used to DWIM when calling the methods on
          /// `nsA[C]String`.
          pub trait $StringLike {
@@ -142377,7 +142114,7 @@ index 64d50df8fe91..647d871f1ea3 100644
                  $StringAdapter::Borrowed($Str::from(&self[..]))
              }
          }
-@@ -644,7 +644,7 @@ macro_rules! define_string_types {
+@@ -645,7 +645,7 @@ macro_rules! define_string_types {
              pub unsafe fn bulk_write(&mut self,
                                       capacity: usize,
                                       units_to_preserve: usize,
@@ -142386,7 +142123,7 @@ index 64d50df8fe91..647d871f1ea3 100644
                  let capacity =
                      self.start_bulk_write_impl(capacity, units_to_preserve, allow_shrinking)?;
                  Ok($BulkWriteHandle::new(self, capacity))
-@@ -1107,7 +1107,7 @@ impl nsACString {
+@@ -1108,7 +1108,7 @@ impl nsACString {
      /// Gets a CString as an utf-8 str or a String, trying to avoid copies, and
      /// replacing invalid unicode sequences with replacement characters.
      #[inline]
@@ -142395,7 +142132,7 @@ index 64d50df8fe91..647d871f1ea3 100644
          String::from_utf8_lossy(&self[..])
      }
  
-@@ -1184,19 +1184,19 @@ impl cmp::PartialEq<str> for nsACString {
+@@ -1185,19 +1185,19 @@ impl cmp::PartialEq<str> for nsACString {
  }
  
  impl nsCStringLike for str {
@@ -142419,5 +142156,5 @@ index 64d50df8fe91..647d871f1ea3 100644
      }
  }
 -- 
-2.52.0.windows.1
+2.49.0.windows.1
 
