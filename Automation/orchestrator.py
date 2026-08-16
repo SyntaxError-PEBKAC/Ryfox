@@ -574,8 +574,20 @@ def package(ctx, variant):
         raise BuildFailedError(f"package.sh failed for {variant}", log_path, output.splitlines()[-200:])
 
 
+# Artifact name infixes, e.g. ducksteps.153.1.0.AVX512.Setup.exe.
+#
+# These decide the order of the Assets box on the release page. GitHub sorts release assets
+# by FILENAME and offers no way to reorder them: there is no position field, and upload
+# order is irrelevant (verified on 153.0, where the ids ran Zen5-first while the page still
+# listed Legacy first). "AVX512" sorts before "Legacy", which is the only reason the Zen5
+# build appears on top. Renaming either of these silently reorders that box.
+#
+# Zen5 previously had no infix at all, which put it below Legacy alphabetically.
+_ARTIFACT_SUFFIXES = {"zen5": ".AVX512", "legacy": ".Legacy"}
+
+
 def _artifact_suffix(variant):
-    return "" if variant == "zen5" else ".Legacy"
+    return _ARTIFACT_SUFFIXES[variant]
 
 
 def _build_7z(ctx, variant, *, solid=True, dictionary=None):
@@ -868,8 +880,14 @@ def phase_advisory(ctx):
     )
     changes = render.get_ducksteps_changes(ctx.source_dir, repo_dir, tag, version, logger=ctx.logger)
 
+    # Iterate VARIANTS, never ctx.build["artifacts"].items(). save_state writes with
+    # sort_keys=True, so that dict comes back from JSON alphabetically ordered as
+    # legacy, zen5 - which silently put the Legacy build above the Zen5 one in both the
+    # SHA512 and VirusTotal lists. VARIANTS is the canonical order (Zen5 first) and is the
+    # only thing that should decide presentation.
     artifacts = []
-    for variant, paths in ctx.build["artifacts"].items():
+    for variant in VARIANTS:
+        paths = ctx.build["artifacts"][variant]
         for kind in ("setup_exe", "standalone_7z"):
             sha256 = ctx.build["vt_results"][variant][kind]["sha256"]
             artifacts.append({
@@ -913,8 +931,13 @@ def phase_draft(ctx):
     """
     version = ctx.build["version"]
 
+    # Upload order IS display order: GitHub returns release assets by asset id, i.e. the
+    # order they were uploaded, and offers no way to reorder them afterwards short of
+    # deleting and re-uploading. So Zen5 must go up first, and again VARIANTS decides that
+    # rather than the alphabetically-sorted dict that comes back out of state.json.
     artifact_paths = []
-    for variant_artifacts in ctx.build["artifacts"].values():
+    for variant in VARIANTS:
+        variant_artifacts = ctx.build["artifacts"][variant]
         artifact_paths.append(variant_artifacts["setup_exe"])
         artifact_paths.append(variant_artifacts["standalone_7z"])
 
