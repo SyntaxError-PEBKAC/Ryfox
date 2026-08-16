@@ -1,10 +1,30 @@
-## [153.0] (15/August/2026)
+## [153.0] (16/August/2026)
 
-⛐ It's the "sixty real bugs, one fake virus" release!
+⛐ It's the "thirteen versions of catching up" release!
 
-🔄 Updated to Firefox ESR 153.0. ducksteps: resync stub installer CSS with ESR 153 markup; ducksteps: fix About dialog wordmark overlap on ESR 153; ducksteps: fix installer wizard bitmap artifacts; ducksteps: credit Mozilla and SyntaxError-PEBKAC in About dialog, point What's new to changelog; ducksteps PGO: remove video fullscreen, Speedometer dwell -15s, corpus tweaks; ducksteps PGO: fullscreen video, airbnb popup fix, librespeed retry, speedometer dwell bump, duck.ai submit fix; ducksteps PGO: corpus updates; duckai behavior, speedtest fixes, dwell bumps; Remove stale Marionette PGO script, superseded by background.js; ducksteps: remove UPX from SFX stub (VT false positive fix); ducksteps: WebExtension PGO training + profileserver patches; Custom PGO training: replace Mozilla default workload with realistic browsing corpus; ducksteps: branding + patchset.
+🔄 Updated to Firefox ESR 153.0. About dialog wordmark no longer overlaps the version text on the new line; Stub installer stylesheets resynced with ESR 153's markup; Installer wizard bitmap artifacts fixed; About dialog credits Mozilla and SyntaxError-PEBKAC, with What's New pointing at the changelog.
 
-🛡️ Addressed 60 CVEs from [Mozilla Foundation Security Advisory 2026-68](https://www.mozilla.org/en-US/security/advisories/mfsa2026-68/) (July 21, 2026). Sixty-ish CVEs patched this round; twenty high, thirty-three moderate, seven of the shrug-and-update variety. Nothing in here is a "drop everything" fire, but twenty highs is still twenty highs, so don't let this one sit in the update queue. Rode in alongside the usual pile of ducksteps upkeep; installer polish, an About dialog that no longer elbows its own wordmark, and getting the antivirus engines to stop flagging the installer for a crime it didn't commit. Patch, ship, move on.
+🆕 What ESR 153 brings over ESR 140 (thirteen Firefox versions at once):
+
+- **Profiles and windows** - a proper profile manager (separate work / school / personal profiles with their own names, avatars and themes), Split View for two pages side by side, and Containers for staying signed into different accounts in one window.
+- **Tabs and navigation** - reworked vertical tabs and tab groups, multi-tab copying and sharing, QR codes for sending a tab to your phone, and passwords reachable from the sidebar.
+- **Address bar** - unit and time zone conversion, quick actions such as muting all audio, a colour picker, and copying a link straight to highlighted text on a page.
+- **Media and graphics** - HDR video playback on Windows, better access to video actions from context menus, and experimental JPEG XL support behind Firefox Labs.
+- **PDFs** - merge documents by dragging them into the sidebar, and add images as new pages from the built-in editor.
+- **Privacy and security** - Fingerprinting Protection extended to Standard mode, stronger bounce-tracking protection, Safe Browsing V5, AES-256 for stored logins, a red location icon whenever a site is using your location, local network access now behind a permission prompt, and extensions no longer reading local files by default.
+- **Translations and accessibility** - wider on-device translation, a dedicated translations page, and improved assistive technology support.
+- **Settings** - redesigned, with some long-obsolete cookie options finally removed.
+
+⚙️ Build and automation work this round:
+
+- **Release automation** - the whole thing now runs from a script: it watches Mozilla for a new ESR tag, rebases the patch stack, builds both variants, smoke-tests them, packages, submits to VirusTotal, resolves the CVE list from Mozilla's advisory data and drafts these notes. Two approval gates (build, publish) are the only manual steps, both from a phone.
+- **ESR 153 migration** - the ducksteps patch stack was rebased across 72,880 upstream commits. Two old upstream lint commits were dropped as obsolete, and the hand-written Rust lifetime workarounds went with them, since upstream now silences that lint itself.
+- **Toolchain refresh** - ESR 153 needs newer tooling than 140 did: MSVC 14.50 (for the STL hardening ESR 153 enables by default), cbindgen 0.29, windows-rs 0.62, the Windows App SDK, DirectX Shader Compiler, and 7zz.
+- **PGO** - both variants are still trained on the custom 88-site corpus rather than Mozilla's default workload, roughly 134 minutes of scripted real browsing per variant.
+- **Optimisation** - unchanged and still the point of this build: Zen5 gets `-march=znver5 -mtune=znver5` with `target-cpu=znver5`, Legacy gets `-march=x86-64-v3` with `target-cpu=haswell`, and both get full LTO on top of PGO.
+- **Packaging** - LZMA2 with a 384 MB dictionary and solid compression for the standalone archives. UPX stays off the installer stub, which keeps the antivirus false positives away.
+
+🛡️ Addressed 60 CVEs from [Mozilla Foundation Security Advisory 2026-68](https://www.mozilla.org/en-US/security/advisories/mfsa2026-68/) (July 21, 2026). This one's a bigger deal than usual: it's the first build on the new ESR line, so it's dragging thirteen versions of upstream Firefox work along behind it instead of the usual trickle. You get an actual profile manager for keeping work and personal browsing apart, Split View for two pages side by side, Containers for juggling multiple accounts in one window, and vertical tabs plus tab groups that got a real rework this time. Windows users get HDR video playback, there's PDF merging and image insertion now, the address bar can convert units and timezones and pick colours, Fingerprinting Protection is on by default in Standard mode, saved logins get AES-256 encryption, and there's experimental JPEG XL support for the handful of people who care. Somewhere in all that, the usual pile of security fixes also rode along (20 high, 33 moderate, 7 low this round), but honestly they're the boring part this time.
 
 High severity:
 
