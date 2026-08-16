@@ -1,0 +1,86 @@
+[project]
+# Changing esr_major retargets the AUTOMATION at a new ESR line, which is the smaller half
+# of a migration. The other half is manual and has to happen first: create the local branch
+# below by rebasing the ducksteps patch stack onto the new line's tag, resolving whatever
+# conflicts a major-version jump produces. The orchestrator deliberately will not do that
+# for you - REBASE halts on any conflict outside VERSION_FILE_WHITELIST (Invariant 1).
+esr_major = 153
+source_dir = 'D:/ducksteps/mozilla-source/ducksteps'
+repo_dir   = 'D:/ducksteps/ducksteps-docs'
+branch     = 'esr153'
+
+[publish]
+repo_slug = 'SyntaxError-PEBKAC/ducksteps'   # the public GitHub project, for gh release create/edit
+# Starts a linked release discussion when the draft is published. Must match an existing
+# category name EXACTLY (they are case sensitive, and gh does not error on a bad one, it
+# just quietly creates nothing - publish_release logs a warning if that happens).
+# Set to '' to publish without a discussion.
+discussion_category = 'Announcements'
+
+[objdirs]
+# These must stay in lockstep with MOZ_OBJDIR in .mozconfig / .mozconfig-Legacy in the
+# source tree - mach reads those, this only tells the orchestrator where to find the
+# resulting dist/ artifacts. A mismatch shows up as a confusing "expected zip not found".
+zen5   = 'D:/ducksteps/ducksteps-obj/esr153'
+legacy = 'D:/ducksteps/ducksteps-obj/esr153-Legacy'
+
+[timeouts]
+pgo_phase_minutes   = 240
+variant_hours       = 8
+pipeline_hours      = 20
+gate_wait_hours     = 3     # how long ZEN5_SMOKE/LEGACY_SMOKE wait for a tap before halting (no snooze button on that gate)
+
+[preflight]
+min_free_disk_gb = 50   # below this on either C: or D:, halt before touching anything
+
+[known_recoverable]
+# Exact substring match against the full build log. Seed set from Tim's own experience;
+# extend this list, don't add heuristics - anything not here is UNKNOWN and halts.
+signatures = ["ProfileSummary", "duplicate symbol"]
+
+[ntfy]
+server        = 'https://ntfy.sh'
+notify_topic  = ''    # overlaid from .env at load time (NTFY_NOTIFY_TOPIC)
+approve_topic = ''    # overlaid from .env at load time (NTFY_APPROVE_TOPIC)
+
+[advisory]
+# Drop CVEs that upstream explicitly scopes to a platform ducksteps does not build for.
+# Case-insensitive substring match against each advisory's title and description.
+#
+# Extend this list, don't add heuristics - same rule as known_recoverable.signatures.
+# Anything NOT matched here is kept. That asymmetry is deliberate: listing a CVE that
+# turns out to be Android-only is a cosmetic wart, while silently dropping one that does
+# affect the Windows build is a security document telling users a lie. Mozilla publishes
+# no structured platform field, so the only signal is prose, and prose changes.
+#
+# Every drop is logged with its CVE id and the marker that matched, so a release's
+# omissions can always be audited against the upstream advisory.
+non_windows_markers = [
+    "in Firefox for Android",
+    "in Firefox for iOS",
+    "only affects Firefox for Android",
+    "only affects Firefox for iOS",
+    "only affects Firefox for macOS",
+    "only affects Firefox for Linux",
+    "only affects Android",
+    "only affects iOS",
+    "only affects macOS",
+    "only affects Linux",
+    "does not affect Firefox for Windows",
+]
+
+[msys]
+# MozillaBuild's bash, given absolutely because a bare "bash" does not reach it.
+# CreateProcess searches System32 before PATH, and C:\Windows\System32\bash.exe is the
+# WSL launcher, so subprocess.run(["bash", ...]) ran package.sh under WSL Linux, which
+# mounts drives at /mnt/d and therefore could not find D:\...\package.sh at all.
+bash = 'D:/ducksteps/mozilla-build/msys2/usr/bin/bash.exe'
+
+[sevenzip]
+binary                = 'C:/Program Files/7-Zip/7z.exe'   # confirmed not on PATH in Phase 0
+dictionary            = '384m'   # 3840m produced a byte-identical archive; 384m is correct
+word_size             = 273
+threads               = 3
+remediation_dictionary = '64m'   # VT remediation ladder step (c): meaningfully different from
+                                  # the default, unlike 3840m, so it actually changes the byte
+                                  # stream (dict size beyond what the data needs is a no-op)
