@@ -182,6 +182,21 @@ def sync_docs_files(repo_dir, source_dir, logger=None) -> list:
 
 _CHANGELOG_SEPARATOR = "\n\n---\n\n"
 _CHANGELOG_HEADING = re.compile(r"^## \[([^\]]+)\]")
+_FIRST_ENTRY = re.compile(r"^## \[", re.MULTILINE)
+
+
+def _split_changelog(text):
+    """(header, entries). The header is the document title block that must stay at the top:
+    everything before the first "## [version]" entry, including its trailing divider.
+
+    Changelog.md opens with a title, a one-line description and a divider. Prepending to the
+    file as a whole buries all of that under the newest release, which is what happened to
+    the 153.0 entry: the file led with a release and only reached "# Changelog" on line 100.
+    """
+    match = _FIRST_ENTRY.search(text)
+    if not match:
+        return text, ""
+    return text[:match.start()], text[match.start():]
 
 
 def prepend_changelog(repo_dir, changelog_entry_text, logger=None) -> Path:
@@ -198,10 +213,13 @@ def prepend_changelog(repo_dir, changelog_entry_text, logger=None) -> Path:
     entry = changelog_entry_text.rstrip("\n")
     new_version = _CHANGELOG_HEADING.match(entry)
 
+    # The title block stays put; only the entry list below it is touched.
+    header, entries = _split_changelog(existing)
+
     # Docs/Changelog.md's own convention (confirmed against the real file): entries
     # separated by a "---" divider.
-    if existing.strip():
-        head, separator, tail = existing.partition(_CHANGELOG_SEPARATOR)
+    if entries.strip():
+        head, separator, tail = entries.partition(_CHANGELOG_SEPARATOR)
         head_version = _CHANGELOG_HEADING.match(head.lstrip())
         replacing = (
             separator
@@ -213,9 +231,13 @@ def prepend_changelog(repo_dir, changelog_entry_text, logger=None) -> Path:
             if logger:
                 logger.info("changelog already has an entry for %s, replacing it in place",
                             new_version.group(1))
-            new_content = entry + _CHANGELOG_SEPARATOR + tail
+            entries = entry + _CHANGELOG_SEPARATOR + tail
         else:
-            new_content = f"{entry}{_CHANGELOG_SEPARATOR}{existing.lstrip()}"
+            entries = f"{entry}{_CHANGELOG_SEPARATOR}{entries.lstrip()}"
+        new_content = header + entries
+    elif header.strip():
+        # Header present but no entries yet: keep the header, add the first entry under it.
+        new_content = header.rstrip("\n") + "\n\n" + entry + "\n"
     else:
         new_content = entry + "\n"
     changelog_path.write_text(new_content, encoding="utf-8")

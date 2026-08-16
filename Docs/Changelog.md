@@ -1,3 +1,9 @@
+# Changelog
+
+All releases of ducksteps. Newest first.
+
+---
+
 ## [153.0] (16/August/2026)
 
 ⛐ It's the "thirteen versions of catching up" release!
@@ -94,12 +100,6 @@ Low severity:
 - **[CVE-2026-16408](https://www.cve.org/CVERecord?id=CVE-2026-16408)** Integer overflow in the Audio/Video: Playback component
 - **[CVE-2026-16409](https://www.cve.org/CVERecord?id=CVE-2026-16409)** Invalid pointer in the Security: PSM component
 - **[CVE-2026-16410](https://www.cve.org/CVERecord?id=CVE-2026-16410)** JIT miscompilation in the JavaScript Engine: JIT component
-
----
-
-# Changelog
-
-All releases of ducksteps. Newest first.
 
 ---
 
