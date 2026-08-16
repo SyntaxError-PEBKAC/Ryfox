@@ -50,6 +50,34 @@ registered task always does a fresh start, which correctly refuses to clobber an
 in-progress build and will just tell you to use `--resume` instead - resuming from a
 random restart isn't a case worth a second scheduled task for.
 
+## Never edit orchestrator.py or state.json while a build is running
+
+Stop the orchestrator first, make the change, then relaunch with `--resume`. Both failure
+modes here are silent, which is what makes them worth a section.
+
+**Edits to the code don't apply.** Python loads the module once at startup, so a running
+pipeline keeps executing the version it started with. Fixing a phase mid-build and watching
+it fail again in exactly the same way is a confusing hour.
+
+**Edits to `state.json` get overwritten.** The orchestrator holds the whole state file in
+memory and calls `save_state()` after every phase, writing its own copy back. Anything you
+edit by hand is silently replaced with the running process's stale version at the next phase
+boundary. This is not theoretical: a VirusTotal Sigma backfill written during a live run was
+wiped this way, and nothing in the log said so. It was only caught by re-reading the file
+afterwards instead of assuming the write had held.
+
+Check before touching either:
+
+```powershell
+Test-Path D:\ducksteps\automation\orchestrator.lock
+Get-CimInstance Win32_Process -Filter "Name='python.exe'" |
+    Where-Object { $_.CommandLine -like '*orchestrator.py*' }
+```
+
+Stopping is cheap. `--resume` restarts at the last phase that didn't complete, so you lose
+that phase and nothing else. Even stopping during a multi-hour BUILD phase only costs that
+one variant's build, never the whole run.
+
 ## Running the setup script
 
 ```powershell
