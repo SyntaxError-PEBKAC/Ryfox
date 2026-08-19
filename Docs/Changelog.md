@@ -11,9 +11,13 @@ All releases of ducksteps. Newest first.
 🔄 Updated to Firefox ESR 153.1.0.
 
 🗑️ Removed the now-unused tools/upx-after-package.ps1 script.
+
 🗓️ Fixed a stale date in the PGO training corpus metadata.
+
 ⚙️ Fixed incorrect wording on the "More from Mozilla" settings page.
+
 🏷️ Data reporting notice now correctly refers to Mozilla as "they", not ducksteps as "we".
+
 📡 Telemetry prompts now correctly name Mozilla as the data recipient, not the maintainer.
 
 🛡️ Addressed 52 CVEs from [Mozilla Foundation Security Advisory 2026-77](https://www.mozilla.org/en-US/security/advisories/mfsa2026-77/) (August 18, 2026). This one's mostly patching holes; 19 high, 23 moderate, and 10 low severity CVEs squashed, nothing screaming louder than the rest but the high count alone is enough to not sit on this. Update when you get a sec.
