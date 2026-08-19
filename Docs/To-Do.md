@@ -1,5 +1,3 @@
 Coming Soon™️:
-
-- Need to update data collection and use owner in settings. Currently says ducksteps and SyntaxError-PEBKAC but links to Mozilla's website, and will be changed in ESR 153.0.1 back to Mozilla as they are the only ones who ever receive that data if selected.
-- Need to change More From page in settings to reflect Mozilla & Firefox, not myself or ducksteps. Should be fixed in 153.0.1.
+- Remove old.reddit.com​ from the PGO corpus. oldreddit.com​ requires login to see anything now. reddit.com​ still works properly, as does redlib.catsarch.com​ so we still receive Reddit PGO training data. Coming in next ducksteps release. (153.1.1+)
 - Assess changing about page background color to blend in with ducksteps logo better.
