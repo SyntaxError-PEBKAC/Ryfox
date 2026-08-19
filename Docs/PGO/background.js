@@ -19,8 +19,8 @@ const PAGE_LOAD_TIMEOUT = 30000;
 // ---------------------------------------------------------------------------
 // Site corpus: [url, behavior, dwell_seconds]
 // Sorted by PGO impact (high -> low) within each category.
-// Total estimated runtime: ~135 minutes.
-// LAST UPDATED 10/MAY/2026
+// Total estimated runtime: ~134 minutes.
+// LAST UPDATED 19/AUG/2026
 // ---------------------------------------------------------------------------
 const SITES = [
   // VIDEO PLAYBACK — codec + compositor + audio sync
@@ -32,7 +32,7 @@ const SITES = [
 
   // SPEED TESTS — canvas rendering + network stack
   ["https://www.speedtest.net", "speedtest_ookla", 75],          // dedicated behavior: clicks a.js-start-test
-  ["https://librespeed.org", "librespeed", 45],                   // dedicated behavior: clicks #start-button, retries at 6s
+  ["https://librespeed.org", "librespeed", 45],                   // dedicated behavior: polls #start-button, clicks once when ready
   ["https://speed.cloudflare.com", "speedtest", 72],              // generic heuristic still fine here
   ["http://localhost:8000/InteractiveRunner.html?startAutomatically=true", "static", 285], // Speedometer 3 — auto-fires via URL param; ~3.5min on 9950X3D, 4:45 dwell for headroom
 
@@ -53,7 +53,6 @@ const SITES = [
   ["https://d3js.org/d3-zoom", "spa", 110],
   ["https://excalidraw.com", "spa", 45],
   ["https://www.reddit.com/r/firefox/", "spa", 120],
-  ["https://old.reddit.com/r/firefox/", "spa", 45],
   ["https://news.ycombinator.com", "spa", 45],
   ["https://stackoverflow.com/questions?tab=active&pagesize=50", "spa", 48],
   ["https://meta.discourse.org/latest", "spa", 110],
@@ -511,19 +510,34 @@ function _speedtestOokla(dwellMs) {
   }, dwellMs - 3000);
 }
 
-// LibreSpeed: clicks #start-button directly.
-// Button initializes disabled until server ping completes (~1-2s).
-// Retries at 6s in case of slow server selection — double-click is safe
-// since the button is a no-op while disabled.
+// LibreSpeed: clicks #start-button once, as soon as it's actually clickable.
+// LibreSpeed's UI (v6, https://github.com/librespeed/speedtest/issues/585)
+// reuses the same button for Start/Abort: while server-ping selection is in
+// progress it's class="disabled" and clicks no-op, but once selection
+// resolves a click starts the test AND a second click while the test is
+// class="active" (running) calls speedtest.abort() instead of starting it
+// again. The old blind two-click retry (4s, then 6s "just in case, it's a
+// no-op while disabled") assumed the button was still disabled at 6s; once
+// server selection started resolving faster than that, the first click
+// started the test and the second aborted it seconds later - exactly the
+// "starts then stops right away" symptom. Poll instead, and stop after the
+// one click that actually starts the test.
 function _librespeed(dwellMs) {
-  function tryClick() {
+  var clicked = false;
+  var deadline = Date.now() + (dwellMs - 5000); // leave time for the scroll below
+  function poll() {
+    if (clicked || Date.now() >= deadline) return;
     try {
       var btn = document.querySelector("#start-button");
-      if (btn) btn.click();
+      if (btn && !btn.classList.contains("disabled") && !btn.classList.contains("active")) {
+        btn.click();
+        clicked = true;
+        return;
+      }
     } catch (e) {}
+    setTimeout(poll, 500);
   }
-  setTimeout(tryClick, 4000);
-  setTimeout(tryClick, 6000);
+  setTimeout(poll, 1000);
   setTimeout(function () {
     window.scrollBy({ top: 400, behavior: "smooth" });
   }, dwellMs - 3000);
@@ -677,7 +691,7 @@ const BEHAVIORS = {
   map:               _map,
   speedtest:         _speedtest,
   speedtest_ookla:   _speedtestOokla,   // Ookla-specific: targets a.js-start-test
-  librespeed:        _librespeed,       // LibreSpeed-specific: #start-button, retries at 6s
+  librespeed:        _librespeed,       // LibreSpeed-specific: polls #start-button, clicks once when ready
   complex_css:       _complexCss,
   duckai:            _duckai,           // consent + Haiku 4.5 + SpiderMonkey prompt
   static:            _static,
