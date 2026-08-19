@@ -1,0 +1,57 @@
+From c3cb161be95fd92c54824aefbac0445a91a7c9a8 Mon Sep 17 00:00:00 2001
+From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
+Date: Sat, 15 Aug 2026 19:53:08 -0700
+Subject: [PATCH 17/17] ducksteps: delete tools/upx-after-package.ps1
+
+Dead code, and a trap. Nothing calls it: not package.sh, not the release
+automation, not the docs. Meanwhile the patch stack carries "remove UPX
+from SFX stub (VT false positive fix)", because UPX 5.x tripped
+Malwarebytes AI heuristics at every compression level tested.
+
+Leaving a runnable script that re-applies UPX means anyone who finds it
+re-introduces exactly the false positives that patch exists to avoid.
+Correcting its hardcoded objdir path, which is what prompted this, would
+only have made it likelier to be run.
+
+The reasoning is preserved in that patch's commit message and in
+Docs/Building.md, which is where it belongs.
+---
+ tools/upx-after-package.ps1 | 26 --------------------------
+ 1 file changed, 26 deletions(-)
+ delete mode 100644 tools/upx-after-package.ps1
+
+diff --git a/tools/upx-after-package.ps1 b/tools/upx-after-package.ps1
+deleted file mode 100644
+index a543a1c5f943..000000000000
+--- a/tools/upx-after-package.ps1
++++ /dev/null
+@@ -1,26 +0,0 @@
+-param(
+-  [string]$ObjDir = "D:\ducksteps-obj\esr140"
+-)
+-
+-$upx = (Get-Command upx -ErrorAction Stop).Source
+-$sea = Join-Path $ObjDir "dist\install\sea"
+-if (-not (Test-Path $sea)) { throw "Missing: $sea" }
+-
+-$targets = Get-ChildItem $sea -File -Filter *.exe |
+-  Where-Object { $_.Name -match "(installer|stub)" }
+-
+-if (-not $targets) { throw "No installer/stub .exe found in: $sea" }
+-
+-$flags = @(
+-  "-q",
+-  "--best",
+-  "--lzma",
+-  "--ultra-brute",
+-  "--compress-icons=3"
+-)
+-
+-foreach ($t in $targets) {
+-  & $upx -q -d $t.FullName 2>$null | Out-Null   # ignore if not packed
+-  & $upx @flags $t.FullName
+-  & $upx -q -t $t.FullName
+-}
+-- 
+2.52.0.windows.1
+

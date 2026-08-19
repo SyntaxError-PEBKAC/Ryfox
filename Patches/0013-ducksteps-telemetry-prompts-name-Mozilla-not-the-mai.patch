@@ -1,0 +1,71 @@
+From dffbcfb7793756182dbd436be6c2855ae1f34e98 Mon Sep 17 00:00:00 2001
+From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
+Date: Sat, 15 Aug 2026 19:17:36 -0700
+Subject: [PATCH 13/17] ducksteps: telemetry prompts name Mozilla, not the
+ maintainer
+
+-vendor-short-name was set to SyntaxError-PEBKAC, but Firefox does not
+use that token as a "who built it" credit. It names the party that
+receives data and vets extensions, and ducksteps changes neither: the
+build ships stock telemetry endpoints and stock extension policy.
+
+The result was a browser telling users, on first run, that it
+"automatically sends some data to SyntaxError-PEBKAC so that we can
+improve your experience", with matching checkboxes for sending technical
+and interaction data and a daily usage ping to a named individual. None
+of that data ever went anywhere near the maintainer. It goes to Mozilla,
+exactly as it does in stock Firefox.
+
+Set to Mozilla, which also corrects the extension trust warnings ("sites
+restricted by X") and the search-data opt-in.
+
+The About dialog is the one place the maintainer is genuinely being
+credited, so community-2 now writes SyntaxError-PEBKAC literally rather
+than through the token, which would otherwise have rendered "designed by
+Mozilla and built by Mozilla".
+---
+ browser/branding/ducksteps/locales/en-US/brand.ftl | 12 +++++++++++-
+ browser/locales/en-US/browser/aboutDialog.ftl      |  6 +++++-
+ 2 files changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/browser/branding/ducksteps/locales/en-US/brand.ftl b/browser/branding/ducksteps/locales/en-US/brand.ftl
+index b91a5e2e73de..6daefd5da59e 100644
+--- a/browser/branding/ducksteps/locales/en-US/brand.ftl
++++ b/browser/branding/ducksteps/locales/en-US/brand.ftl
+@@ -23,5 +23,15 @@
+ # This brand name can be used in messages where the product name needs to
+ # remain unchanged across different versions (Nightly, Beta, etc.).
+ -brand-product-name = ducksteps
+--vendor-short-name = SyntaxError-PEBKAC
++# Mozilla, NOT SyntaxError-PEBKAC. This token is not a "who built it" credit: Firefox uses
++# it for the party that receives data and vets extensions, and ducksteps changes neither.
++# It fills in the data-collection preferences ("Send technical and interaction data to X",
++# "Send daily usage ping to X"), the startup data-reporting notice, the extension trust
++# warnings ("sites restricted by X") and the search-data opt-in. ducksteps ships stock
++# telemetry endpoints, so every one of those goes to Mozilla. Naming the maintainer here
++# told users their browsing data was being sent to a person, which was both untrue and
++# needlessly alarming.
++# The About dialog credits the maintainer with a literal string instead, because that one
++# genuinely is a "built by" credit.
++-vendor-short-name = Mozilla
+ trademarkInfo = Firefox and the Firefox logos are trademarks of the Mozilla Foundation.
+diff --git a/browser/locales/en-US/browser/aboutDialog.ftl b/browser/locales/en-US/browser/aboutDialog.ftl
+index a944602b2d73..d2de4d50d246 100644
+--- a/browser/locales/en-US/browser/aboutDialog.ftl
++++ b/browser/locales/en-US/browser/aboutDialog.ftl
+@@ -78,7 +78,11 @@ aboutdialog-submit-feedback = Submit Feedback
+ 
+ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-short-name }</label> is a <label data-l10n-name="community-exp-creditsLink">global community</label> working together to keep the Web open, public and accessible to all.
+ 
+-community-2 = { -brand-short-name } is designed by <label data-l10n-name="community-mozillaLink">Mozilla</label> and built by <label data-l10n-name="community-vendorLink">{ -vendor-short-name }</label>, with a <label data-l10n-name="community-creditsLink">global community</label> working together to keep the Web open, public, and accessible to all.
++# "SyntaxError-PEBKAC" is written out rather than using { -vendor-short-name }, because
++# that token now correctly resolves to Mozilla: it is the party that receives telemetry and
++# vets extensions everywhere else in the UI. This line is the one place the maintainer is
++# genuinely being credited, so it says so directly.
++community-2 = { -brand-short-name } is designed by <label data-l10n-name="community-mozillaLink">Mozilla</label> and built by <label data-l10n-name="community-vendorLink">SyntaxError-PEBKAC</label>, with a <label data-l10n-name="community-creditsLink">global community</label> working together to keep the Web open, public, and accessible to all.
+ 
+ helpus = Want to help? <label data-l10n-name="helpus-donateLink">Make a donation</label> or <label data-l10n-name="helpus-getInvolvedLink">get involved!</label>
+ 
+-- 
+2.52.0.windows.1
+

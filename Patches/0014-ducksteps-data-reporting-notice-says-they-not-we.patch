@@ -1,0 +1,35 @@
+From c6a142f57e5959a9faa07b9c48736e0c59a31d0c Mon Sep 17 00:00:00 2001
+From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
+Date: Sat, 15 Aug 2026 19:46:57 -0700
+Subject: [PATCH 14/17] ducksteps: data reporting notice says "they", not "we"
+
+Upstream writes "so that we can improve your experience", which works
+when the vendor collecting the data and the vendor shipping the browser
+are the same organisation. In ducksteps they are not. The data goes to
+Mozilla, but the notice appears in a build Mozilla did not produce, so
+"we" reads as the maintainer collecting it.
+---
+ browser/locales/en-US/browser/browser.ftl | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/browser/locales/en-US/browser/browser.ftl b/browser/locales/en-US/browser/browser.ftl
+index f05045ad2d6c..831793a2b0cf 100644
+--- a/browser/locales/en-US/browser/browser.ftl
++++ b/browser/locales/en-US/browser/browser.ftl
+@@ -1320,7 +1320,12 @@ filepicker-blocked-infobar = Your organization has blocked access to local files
+ 
+ ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
+ 
+-data-reporting-notification-message = { -brand-short-name } automatically sends some data to { -vendor-short-name } so that we can improve your experience.
++# "they", not upstream's "we". Upstream can say "we" because the vendor collecting the data
++# and the vendor shipping the browser are the same organisation. In ducksteps they are not:
++# the data goes to Mozilla, but this notice appears in a build Mozilla did not produce, so
++# "we" reads as the maintainer collecting it. That is the exact confusion this string caused
++# when -vendor-short-name still named the maintainer.
++data-reporting-notification-message = { -brand-short-name } automatically sends some data to { -vendor-short-name } so that they can improve your experience.
+ data-reporting-notification-button =
+     .label = Choose What I Share
+     .accesskey = C
+-- 
+2.52.0.windows.1
+

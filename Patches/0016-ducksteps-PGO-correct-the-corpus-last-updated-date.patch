@@ -1,0 +1,30 @@
+From ab923b63ee8bfadc0621a62ebb9950eea4059195 Mon Sep 17 00:00:00 2001
+From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
+Date: Sat, 15 Aug 2026 19:52:55 -0700
+Subject: [PATCH 16/17] ducksteps PGO: correct the corpus last-updated date
+
+Bumps the header date to match the last corpus change. The absolute path
+comment that came with this edit is deliberately not included: this file
+syncs to Docs/PGO/background.js in the public repo on every release, so
+it would have published the maintainer's local disk layout to describe a
+location the repo already makes obvious.
+---
+ build/pgo/pgo_training_extension/background.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/build/pgo/pgo_training_extension/background.js b/build/pgo/pgo_training_extension/background.js
+index 482259b471d6..21bea20c0cee 100644
+--- a/build/pgo/pgo_training_extension/background.js
++++ b/build/pgo/pgo_training_extension/background.js
+@@ -20,7 +20,7 @@ const PAGE_LOAD_TIMEOUT = 30000;
+ // Site corpus: [url, behavior, dwell_seconds]
+ // Sorted by PGO impact (high -> low) within each category.
+ // Total estimated runtime: ~135 minutes.
+-// LAST UPDATED 05/MAY/2026
++// LAST UPDATED 10/MAY/2026
+ // ---------------------------------------------------------------------------
+ const SITES = [
+   // VIDEO PLAYBACK — codec + compositor + audio sync
+-- 
+2.52.0.windows.1
+

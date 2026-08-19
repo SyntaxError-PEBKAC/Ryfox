@@ -1,7 +1,7 @@
-From f03388b16cf9b7280f9aaf0c5f45df948ffca4bd Mon Sep 17 00:00:00 2001
+From b463314d34690f2ff722e71e70cd7d163d5aac0c Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Thu, 13 Aug 2026 00:07:16 -0700
-Subject: [PATCH 10/12] ducksteps: fix installer wizard bitmap artifacts
+Subject: [PATCH 10/17] ducksteps: fix installer wizard bitmap artifacts
 
 wizWatermark.bmp had a jagged circular edge and wizHeader.bmp cut off
 mid-arc with visible dithering, both from a lossy downscale of the
@@ -2269,5 +2269,5 @@ z)yrL+(*UOdP6M0<I1T&>4RGH1Pblqn{0a*+2lwrW-JiH;4(LCjH0~>$1~?6H8sId*
 JX`n*`{|_FbZ-oE=
 
 -- 
-2.49.0.windows.1
+2.52.0.windows.1
 

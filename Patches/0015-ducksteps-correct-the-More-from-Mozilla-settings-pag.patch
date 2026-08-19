@@ -1,0 +1,79 @@
+From ab29fac27e37383248b4d5e34f61b61505954583 Mon Sep 17 00:00:00 2001
+From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
+Date: Sat, 15 Aug 2026 19:48:54 -0700
+Subject: [PATCH 15/17] ducksteps: correct the More from Mozilla settings page
+
+The page advertises OTHER products, so it should name Mozilla throughout.
+Fixing -vendor-short-name already corrected the header, the left-hand nav
+entry and the subtitle, since those interpolate the token. Two strings
+still read wrong.
+
+The mobile card used { -brand-product-name }, so it read "ducksteps for
+Mobile" and promised a mobile ducksteps that does not exist and never
+will: this is a desktop Windows build maintained by one person. The card
+links to Mozilla's Firefox for Android and iOS, so it now says Firefox
+literally rather than through a token. Same for the QR code alt text.
+
+The new products card said "{ -vendor-short-name } New Products", now
+possessive so it reads "Mozilla's New Products". Applied to both the
+card2 label that actually renders and the older -title string, so they do
+not drift apart.
+---
+ .../browser/preferences/moreFromMozilla.ftl     | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/browser/locales/en-US/browser/preferences/moreFromMozilla.ftl b/browser/locales/en-US/browser/preferences/moreFromMozilla.ftl
+index ac655663e02a..7ae40246208e 100644
+--- a/browser/locales/en-US/browser/preferences/moreFromMozilla.ftl
++++ b/browser/locales/en-US/browser/preferences/moreFromMozilla.ftl
+@@ -13,11 +13,15 @@ more-from-moz-category =
+ 
+ more-from-moz-subtitle = Check out other { -vendor-short-name } products that work to support a healthy internet.
+ 
+-more-from-moz-firefox-mobile-title = { -brand-product-name } Mobile
++# "Firefox", not { -brand-product-name }. This whole page advertises OTHER products, and the
++# card links to Mozilla's Firefox for Android/iOS. Left as the token it read "ducksteps for
++# Mobile", promising a mobile ducksteps that does not exist and never will: this is a desktop
++# Windows build maintained by one person.
++more-from-moz-firefox-mobile-title = Firefox Mobile
+ more-from-moz-firefox-mobile-description = The mobile browser that puts your privacy first.
+-more-from-moz-firefox-mobile-title-1 = { -brand-product-name } for Mobile
++more-from-moz-firefox-mobile-title-1 = Firefox for Mobile
+ more-from-moz-firefox-mobile =
+-    .label = { -brand-product-name } for Mobile
++    .label = Firefox for Mobile
+     .description = The mobile browser that puts your privacy first.
+ 
+ more-from-moz-mozilla-vpn-title = { -mozilla-vpn-brand-name }
+@@ -26,7 +30,7 @@ more-from-moz-mozilla-vpn-description = Discover an added layer of anonymous bro
+ more-from-moz-qr-code-box-firefox-mobile-title = Download using your mobile device. Point your camera at the QR code. When a link appears, tap it.
+ more-from-moz-qr-code-box-firefox-mobile-button = Send an email to your phone instead
+ more-from-moz-qr-code-firefox-mobile-img =
+-  .alt = QR code to download { -brand-product-name } Mobile
++  .alt = QR code to download Firefox Mobile
+ 
+ more-from-moz-button-mozilla-vpn-2 = Get VPN
+ 
+@@ -64,7 +68,7 @@ more-from-moz-thunderbird-button = Get { -thunderbird-brand-short-name }
+ 
+ ## These strings are for the Mozilla New Products card in about:preferences moreFromMozilla page
+ 
+-more-from-moz-new-products-title = { -vendor-short-name } New Products
++more-from-moz-new-products-title = { -vendor-short-name }'s New Products
+ more-from-moz-new-products-description = Discover the latest products from { -vendor-short-name }.
+ more-from-moz-new-products-button = See new products
+ 
+@@ -103,8 +107,9 @@ more-from-moz-solo-card-1 =
+     .label = { -solo-ai-brand-name }
+     .description = Create your website instantly and connect your own custom domain for free.
+ 
++# This is the card actually rendered on the page (card2, not the older -title string above).
+ more-from-moz-new-products-card2 =
+-    .label = { -vendor-short-name } New Products
++    .label = { -vendor-short-name }'s New Products
+     .description = Explore our latest ideas and experimental technologies.
+ 
+ more-from-moz-mozilla-monitor-box-link =
+-- 
+2.52.0.windows.1
+

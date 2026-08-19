@@ -1,7 +1,7 @@
-From c0fcadead9cf27d1a24a81120da5f8a65e5e0fa9 Mon Sep 17 00:00:00 2001
+From 34cabb50cdfb5a0ec61463dde9d00b638f879232 Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Wed, 29 Apr 2026 17:36:56 -0700
-Subject: [PATCH 04/12] ducksteps: remove UPX from SFX stub (VT false positive
+Subject: [PATCH 04/17] ducksteps: remove UPX from SFX stub (VT false positive
  fix)
 
 ---
@@ -54,5 +54,5 @@ index fc490157f91c..d6046dffac1c 100644
 +    sys.exit(main(sys.argv[1:]))
 \ No newline at end of file
 -- 
-2.49.0.windows.1
+2.52.0.windows.1
 

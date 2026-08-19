@@ -1,7 +1,7 @@
-From 4b0e53a3e272c720f1cf9d81359d65cfd4dbb7a5 Mon Sep 17 00:00:00 2001
+From 8b96308db3a723d207d567dea4e7d3d1fa351690 Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Tue, 5 May 2026 19:37:21 -0700
-Subject: [PATCH 07/12] ducksteps PGO: fullscreen video, airbnb popup fix,
+Subject: [PATCH 07/17] ducksteps PGO: fullscreen video, airbnb popup fix,
  librespeed retry, speedometer dwell bump, duck.ai submit fix
 
 ---
@@ -331,5 +331,5 @@ index 91dbc7a61bdb..ef3c67bdab3e 100644
      code =
        "(" + _exerciseHotPaths.toString() + ")(" + dwellMs + ");\n" +
 -- 
-2.49.0.windows.1
+2.52.0.windows.1
 

@@ -1,7 +1,7 @@
-From 7cdaed37d7b0a0661d4ead5164e25ef7340671b7 Mon Sep 17 00:00:00 2001
+From e789407dd741cf49e510ea245fd0b4d420558bb5 Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Fri, 14 Aug 2026 19:38:14 -0700
-Subject: [PATCH 11/12] ducksteps: fix About dialog wordmark overlap on ESR 153
+Subject: [PATCH 11/17] ducksteps: fix About dialog wordmark overlap on ESR 153
 
 The branding aboutDialog.css was a verbatim copy of ESR 140's official
 file and was never resynced, so it missed two layout changes upstream
@@ -98,5 +98,5 @@ index 0a88f2f78450..4413027a5bba 100644
    margin-block: 10px;
  }
 -- 
-2.49.0.windows.1
+2.52.0.windows.1
 

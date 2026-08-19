@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+import email
 import re
 import subprocess
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from email.header import decode_header
 
 SEVERITY_ORDER = ["critical", "high", "moderate", "low"]
 
-_PATCH_SUBJECT_LINE = re.compile(r"^Subject:\s*(.+)$", re.MULTILINE)
 _FORMAT_PATCH_PREFIX = re.compile(r"^\[PATCH[^\]]*\]\s*")
 
 # Mozilla's own commit-workflow conventions (Bug NNNNN, No bug, r=/a= approval tags). Rebasing
@@ -73,10 +74,24 @@ def _current_patch_subjects(source_dir, current_upstream_tag, logger=None) -> li
 
 
 def _extract_patch_subject(patch_file_content: str) -> str | None:
-    match = _PATCH_SUBJECT_LINE.search(patch_file_content)
-    if not match:
+    """git format-patch folds a long Subject onto a continuation line (RFC 2822) and
+    MIME-encodes it (RFC 2047) whenever it contains non-ASCII characters. A plain
+    "Subject:\\s*(.+)$" regex only ever sees the first line, so a wrapped or encoded
+    subject came back truncated/garbled and silently failed to match the un-truncated
+    subject that `git log --pretty=%s` returns for the same commit - every such patch
+    was then wrongly reported as "new" in get_ducksteps_changes, every release. Parsing
+    the header block with `email` handles both correctly.
+    """
+    _, _, header_block = patch_file_content.partition("\n")  # drop the mbox "From <sha> ..." line
+    raw_subject = email.message_from_string(header_block).get("Subject")
+    if not raw_subject:
         return None
-    return _FORMAT_PATCH_PREFIX.sub("", match.group(1).strip())
+    raw_subject = re.sub(r"\r?\n", "", raw_subject)  # unfold: fold-point whitespace is already in the text
+    subject = "".join(
+        part.decode(encoding or "utf-8", errors="replace") if isinstance(part, bytes) else part
+        for part, encoding in decode_header(raw_subject)
+    )
+    return _FORMAT_PATCH_PREFIX.sub("", subject.strip())
 
 
 def _previous_patch_subjects(repo_dir, prev_version_tag, logger=None) -> set | None:
@@ -299,12 +314,19 @@ def build_release_data(*, version, esr_version, advisory, ducksteps_changes, art
     )
 
 
-def _upstream_sync_line(data: ReleaseData) -> str:
+def _upstream_sync_lines(data: ReleaseData) -> list:
+    """One line per ducksteps-side change, each its own bullet rather than a semicolon-joined
+    run-on sentence. Each entry in ducksteps_changes carries its own tailored leading emoji -
+    that pairing is a judgment call (what a change IS, not just its raw commit subject), so it
+    is made where the list is curated, not invented here from a fixed keyword table."""
+    lines = [f"🔄 Updated to Firefox ESR {data.version}."]
     if data.ducksteps_changes:
-        changes_text = "; ".join(data.ducksteps_changes) + "."
+        lines.append("")
+        lines.extend(data.ducksteps_changes)
     else:
-        changes_text = "Pure upstream sync; no ducksteps-side changes this round."
-    return f"🔄 Updated to Firefox ESR {data.version}. {changes_text}"
+        lines.append("")
+        lines.append("Pure upstream sync; no ducksteps-side changes this round.")
+    return lines
 
 
 def _extra_sections(data: ReleaseData) -> list:
@@ -349,7 +371,7 @@ def render_release_notes(data: ReleaseData) -> str:
     # it again just repeats the same sentence twice on the release page. The changelog
     # renderer DOES keep it, because there each entry is only introduced by a "## [version]"
     # heading and would otherwise lose the phrase entirely.
-    lines = [_upstream_sync_line(data), ""]
+    lines = _upstream_sync_lines(data) + [""]
     lines.extend(_extra_sections(data))  # features first: on a migration that is the story
     lines.extend(_security_paragraph(data))
     lines.extend(_severity_section(data.cves, bold_headers=True))
@@ -380,8 +402,9 @@ def render_changelog_entry(data: ReleaseData) -> str:
     lines = [
         f"## [{data.version}] ({data.release_date})", "",
         f'⛐ It\'s the "{data.title}" release!', "",
-        _upstream_sync_line(data), "",
     ]
+    lines.extend(_upstream_sync_lines(data))
+    lines.append("")
     lines.extend(_extra_sections(data))
     lines.extend(_security_paragraph(data))
     lines.extend(_severity_section(data.cves, bold_headers=False))

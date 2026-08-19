@@ -1,11 +1,11 @@
 # ducksteps patch stack
 
-These are the commits that turn a stock Firefox ESR checkout into ducksteps: exported with `git format-patch` from the `esr153` branch, applied on top of upstream Mozilla commit `c754d4f2d60f` (see [`../Docs/Building.md`](../Docs/Building.md) for the full build workflow).
+These are the commits that turn a stock Firefox ESR checkout into ducksteps: exported with `git format-patch` from the `esr153` branch, applied on top of upstream Mozilla commit `468445e58d3a` (see [`../Docs/Building.md`](../Docs/Building.md) for the full build workflow).
 
 To use them: clone [mozilla-firefox/firefox](https://github.com/mozilla-firefox/firefox), check out the matching ESR branch/tag, then apply in order:
 
 ```bash
-git am Patches/0001-ducksteps-branding-patchset.patch Patches/0002-Custom-PGO-training-replace-Mozilla-default-workload.patch ... Patches/0012-ducksteps-resync-stub-installer-CSS-with-ESR-153-mar.patch
+git am Patches/0001-ducksteps-branding-patchset.patch Patches/0002-Custom-PGO-training-replace-Mozilla-default-workload.patch ... Patches/0017-ducksteps-delete-tools-upx-after-package.ps1.patch
 ```
 
 or all at once:
@@ -28,3 +28,8 @@ Numbered in the order they were originally committed:
 10. `ducksteps: fix installer wizard bitmap artifacts`
 11. `ducksteps: fix About dialog wordmark overlap on ESR 153`
 12. `ducksteps: resync stub installer CSS with ESR 153 markup`
+13. `ducksteps: telemetry prompts name Mozilla, not the maintainer`
+14. `ducksteps: data reporting notice says "they", not "we"`
+15. `ducksteps: correct the More from Mozilla settings page`
+16. `ducksteps PGO: correct the corpus last-updated date`
+17. `ducksteps: delete tools/upx-after-package.ps1`
