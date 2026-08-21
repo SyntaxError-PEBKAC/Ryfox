@@ -1,0 +1,37 @@
+# Line endings are decided here, in the repo, instead of by whatever core.autocrlf
+# happens to be set to on the machine doing the checkout. Git for Windows sets
+# autocrlf=true system-wide by default, which is why this repo stores LF - but that
+# is a property of the machine that has always published it, not of the project.
+# Anyone cloning on Linux, or on a Windows box with autocrlf off, gets different
+# behaviour from the same repo.
+#
+# Adding this file changed nothing: every rule below matches what is already stored.
+
+# Let git classify text vs binary per file, and store text files with LF. Checkout
+# still honours core.autocrlf, so working copies stay CRLF on Windows.
+* text=auto
+
+# Archives. Auto-detection already spots these, but say it outright.
+*.7z binary
+
+# Copied byte-for-byte out of the build tree by sync_docs_files (normalize_lf=False),
+# CRLF and all, because they are published as exact copies of the build inputs.
+# Leave them alone in both directions.
+Docs/PGO/background.js -text
+Docs/PGO/manifest.json -text
+Docs/PGO/pgo_done.html -text
+
+# Patches/*.patch is deliberately NOT listed here, and that is a known compromise
+# rather than an endorsement of the current behaviour.
+#
+# git format-patch emits mixed endings: LF for the patch's own structure, and the
+# source file's real endings on the context and +/- content lines. Patch 0017
+# deletes tools/upx-after-package.ps1, which is CRLF in the Firefox tree, so its
+# removed-content lines are CRLF while its headers are LF. The text=auto rule above
+# strips those CRs on commit, so the published patch describes an LF file where the
+# real one is CRLF - which matters because Patches/README.md tells people to run
+# `git am Patches/*.patch`.
+#
+# Correcting it means "*.patch -text" AND re-exporting all 17 patches, which
+# rewrites published files. That is a deliberate change to make on its own, not a
+# side effect of adding this file.
