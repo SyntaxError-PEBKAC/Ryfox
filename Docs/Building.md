@@ -121,6 +121,14 @@ The PGO flow runs automatically:
 profile-initialization pass, not a hang or a failure. The real training run is
 `profile-run-2.log`, which covers all 88 sites.
 
+> **The corpus in [`PGO/background.js`](PGO/background.js) is one build ahead of the numbers
+> above.** It now lists 87 sites and ~134 minutes, having dropped `old.reddit.com` (login-walled
+> as of August 2026) and changed the LibreSpeed start behaviour to click once when the button is
+> ready instead of clicking early and retrying. Those changes are already in the `esr153` patch
+> stack but are NOT in the shipped 153.1.0esr build, which was trained on the 88-site corpus
+> described here. They take effect in the first ducksteps build after 153.1.0esr. See
+> [`To-Do.md`](To-Do.md).
+
 Done when you see `your build finally finished successfully!`
 
 Verify it launches:
