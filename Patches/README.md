@@ -5,14 +5,16 @@ These are the commits that turn a stock Firefox ESR checkout into ducksteps: exp
 To use them: clone [mozilla-firefox/firefox](https://github.com/mozilla-firefox/firefox), check out the matching ESR branch/tag, then apply in order:
 
 ```bash
-git am Patches/0001-ducksteps-branding-patchset.patch Patches/0002-Custom-PGO-training-replace-Mozilla-default-workload.patch ... Patches/0017-ducksteps-delete-tools-upx-after-package.ps1.patch
+git am --keep-cr Patches/0001-ducksteps-branding-patchset.patch Patches/0002-Custom-PGO-training-replace-Mozilla-default-workload.patch ... Patches/0017-ducksteps-delete-tools-upx-after-package.ps1.patch
 ```
 
 or all at once:
 
 ```bash
-git am Patches/*.patch
+git am --keep-cr Patches/*.patch
 ```
+
+`--keep-cr` is required, not optional. Some of these patches touch files that are CRLF in the Firefox tree (`tools/upx-after-package.ps1`, the PGO extension sources), so their context and content lines carry carriage returns. `git am` strips trailing CRs by default, which corrupts those lines and makes the patch fail to apply.
 
 Numbered in the order they were originally committed:
 
