@@ -1,7 +1,7 @@
-From 940c3c1989f12dd911ac8e361769e67b9c26aeb7 Mon Sep 17 00:00:00 2001
+From 12751af11e528aaa64d8aabacde82c39dfa62d36 Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Wed, 12 Aug 2026 22:32:40 -0700
-Subject: [PATCH 09/17] ducksteps: credit Mozilla and SyntaxError-PEBKAC in
+Subject: [PATCH 09/22] ducksteps: credit Mozilla and SyntaxError-PEBKAC in
  About dialog, point What's new to changelog
 
 Reword the About dialog credit line to name both Mozilla (design) and

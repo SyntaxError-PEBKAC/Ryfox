@@ -1,7 +1,7 @@
-From eddaac40d9ea9e4db2495ab79b7be34f032426e7 Mon Sep 17 00:00:00 2001
+From f19fa3cdf3345288cdab4f69fe04dc6cda7761ba Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Wed, 29 Apr 2026 23:42:50 -0700
-Subject: [PATCH 05/17] Remove stale Marionette PGO script, superseded by
+Subject: [PATCH 05/22] Remove stale Marionette PGO script, superseded by
  background.js
 
 ---

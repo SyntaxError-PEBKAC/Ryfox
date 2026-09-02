@@ -7,8 +7,6 @@ from datetime import datetime, timezone
 import requests
 import yaml
 
-import common
-
 GITHUB_API_BASE = "https://api.github.com/repos/mozilla/foundation-security-advisories"
 ADVISORIES_INDEX_URL = "https://www.mozilla.org/en-US/security/advisories/"
 
@@ -24,7 +22,7 @@ class Advisory:
     mfsa_number: str | None
     mfsa_url: str | None
     announced_date: str | None
-    cves: list = field(default_factory=list)  # [{id, title, impact, url}]
+    cves: list = field(default_factory=list)  # [{id, impact}] - see _advisory_from_yaml
 
     @classmethod
     def empty(cls) -> "Advisory":
@@ -107,11 +105,13 @@ def _advisory_from_yaml(filename, data, non_windows_markers=(), logger=None) -> 
         if marker:
             dropped.append((cve_id, marker))
             continue
+        # id and impact only. The per-CVE title and cve.org URL used to feed the severity
+        # listing in the release notes; nothing renders individual CVEs any more, so parsing
+        # them just carried dead fields (and a strip_em_dashes call) through every release.
+        # The full detail stays one click away, at mfsa_url.
         cves.append({
             "id": cve_id,
-            "title": common.strip_em_dashes((details or {}).get("title", "")),
             "impact": (details or {}).get("impact", "").lower(),
-            "url": f"https://www.cve.org/CVERecord?id={cve_id}",
         })
     if dropped and logger:
         # Logged individually and by name: a reader of this log has to be able to

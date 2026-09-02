@@ -7,8 +7,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from email.header import decode_header
 
-SEVERITY_ORDER = ["critical", "high", "moderate", "low"]
-
 _FORMAT_PATCH_PREFIX = re.compile(r"^\[PATCH[^\]]*\]\s*")
 
 # Mozilla's own commit-workflow conventions (Bug NNNNN, No bug, r=/a= approval tags). Rebasing
@@ -175,13 +173,6 @@ def get_ducksteps_changes(source_dir, repo_dir, current_upstream_tag, current_ve
     return new_subjects
 
 
-def _group_by_severity(cves) -> dict:
-    groups = {level: [] for level in SEVERITY_ORDER}
-    for cve in cves:
-        groups.setdefault(cve.get("impact", "moderate"), []).append(cve)
-    return groups
-
-
 def _parse_title_summary(text):
     title = None
     summary_lines = []
@@ -228,8 +219,8 @@ def _draft_title_and_summary(cves, ducksteps_changes, previous_titles, feature_h
             "is the first build on the new ESR line, so it carries thirteen versions of "
             "upstream work at once. Draw only on the feature list above; do not invent "
             "features, and do not name or invent any CVE IDs or bug numbers. Mention the "
-            "security fixes briefly at the end (severity mix only), since they are the "
-            "routine part this time."
+            "security fixes briefly at the end - the per-severity counts and total given "
+            "above, and nothing more specific - since they are the routine part this time."
         )
     elif cves:
         title_instruction = (
@@ -237,9 +228,12 @@ def _draft_title_and_summary(cves, ducksteps_changes, previous_titles, feature_h
             "(they follow the pattern: It's the \"<phrase>\" release! - give me just the phrase)."
         )
         summary_instruction = (
-            "A one-paragraph summary of the security fixes, in the voice above. Do not name or "
-            "invent any CVE IDs, bug numbers, or specific vulnerability names - just characterize "
-            "the release at a high level (severity mix, whether anything stands out)."
+            "A one-paragraph summary of the security fixes, in the voice above. State the "
+            "severity breakdown explicitly (the per-severity counts given above, and the total) - "
+            "this paragraph is the only place the reader gets it, since the release notes no "
+            "longer list the CVEs individually. Beyond that, do not name or invent any CVE IDs, "
+            "bug numbers, or specific vulnerability names - just characterize the release at a "
+            "high level (whether anything stands out)."
         )
     else:
         title_instruction = (
@@ -340,6 +334,12 @@ def _extra_sections(data: ReleaseData) -> list:
 
 
 def _security_paragraph(data: ReleaseData) -> list:
+    """The whole of the security content: a count, a link to the advisory, and the drafted
+    summary. Releases used to follow this with every CVE broken out by severity, one linked
+    bullet each - at 50+ CVEs an advisory that buried everything else in the notes, and the
+    advisory itself is a better place to read the full list than a copy of it here. The
+    severity breakdown survives inside data.summary, which _draft_title_and_summary is told
+    to spell out for exactly that reason."""
     if not data.cves:
         return []
     return [
@@ -350,22 +350,6 @@ def _security_paragraph(data: ReleaseData) -> list:
     ]
 
 
-def _severity_section(cves, *, bold_headers: bool) -> list:
-    groups = _group_by_severity(cves)
-    lines = []
-    for level in SEVERITY_ORDER:
-        items = groups[level]
-        if not items:
-            continue
-        header_text = f"{level.capitalize()} severity:"
-        lines.append(f"**{header_text}**" if bold_headers else header_text)
-        lines.append("")
-        for cve in items:
-            lines.append(f"- **[{cve['id']}]({cve['url']})** {cve['title']}")
-        lines.append("")
-    return lines
-
-
 def render_release_notes(data: ReleaseData) -> str:
     # No title line here. GitHub already renders release.name above the body, so emitting
     # it again just repeats the same sentence twice on the release page. The changelog
@@ -374,7 +358,6 @@ def render_release_notes(data: ReleaseData) -> str:
     lines = _upstream_sync_lines(data) + [""]
     lines.extend(_extra_sections(data))  # features first: on a migration that is the story
     lines.extend(_security_paragraph(data))
-    lines.extend(_severity_section(data.cves, bold_headers=True))
 
     lines.append("---")
     lines.append("")
@@ -407,5 +390,4 @@ def render_changelog_entry(data: ReleaseData) -> str:
     lines.append("")
     lines.extend(_extra_sections(data))
     lines.extend(_security_paragraph(data))
-    lines.extend(_severity_section(data.cves, bold_headers=False))
     return "\n".join(lines).rstrip() + "\n"

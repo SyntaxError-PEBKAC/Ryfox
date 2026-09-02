@@ -1,0 +1,336 @@
+From f2e4ea9c9275c6cb6ee1f416fb6dba2b8f7fafc5 Mon Sep 17 00:00:00 2001
+From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
+Date: Mon, 31 Aug 2026 15:06:27 -0700
+Subject: [PATCH 20/22] ducksteps: replace the About dialog's flat purple with
+ a space backdrop
+
+The dialog's background was #20123a, which is upstream's colour and was
+never ours. The icon is a circular scene of deep navy space with a
+sunset in it, so against flat purple its edge read as a hard disc pasted
+onto an unrelated field.
+
+about-background.svg is drawn from the icon's own palette, sampled from
+the artwork rather than guessed: navy #000d24, indigo #17173d, the
+sunset ramp #fe6405 / #fefe9c, swoosh silver #c1c4c0 and rust #983429.
+A warm bloom sits under the icon so the sunset inside it carries out
+into the dialog, which is what does most of the blending. Beyond that:
+a spiral galaxy above the icon, an emission nebula in the top-right
+corner, three comets, and four-point glints cut to the same shape as
+the stars drawn inside the icon.
+
+Everything with detail in it is placed clear of the text columns - the
+logo occupies x 40-232, the wordmark x 275-474, the copy x 273-703 - and
+a soft scrim holds the middle back so the copy keeps its contrast.
+
+The stars twinkle and the galaxy's core fades in and out. Both live
+inside the SVG behind @media not (prefers-reduced-motion), which is the
+same shape as toolkit/themes/shared/icons/loading.svg, an animated SVG
+this dialog already loads as an image. The brightness tiers are declared
+outside that query on purpose: an animation outranks a normal
+declaration while it runs, so those values are what remain when motion
+is off. Without them the reduced-motion still frame would render every
+glint at full opacity.
+
+background-color stays set, to the artwork's own deepest navy, so a
+dialog painted before the image decodes looks like the artwork rather
+than like white. The whole thing stays inside upstream's
+prefers-contrast guard, so a light high-contrast desktop is untouched.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+---
+ .../ducksteps/content/about-background.svg    | 240 ++++++++++++++++++
+ .../ducksteps/content/aboutDialog.css         |  13 +-
+ browser/branding/ducksteps/content/jar.mn     |   1 +
+ 3 files changed, 252 insertions(+), 2 deletions(-)
+ create mode 100644 browser/branding/ducksteps/content/about-background.svg
+
+diff --git a/browser/branding/ducksteps/content/about-background.svg b/browser/branding/ducksteps/content/about-background.svg
+new file mode 100644
+index 000000000000..892a5dd3c0a3
+--- /dev/null
++++ b/browser/branding/ducksteps/content/about-background.svg
+@@ -0,0 +1,240 @@
++<!-- This Source Code Form is subject to the terms of the Mozilla Public
++   - License, v. 2.0. If a copy of the MPL was not distributed with this
++   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
++<!--
++  Backdrop for the About dialog. The palette is sampled straight out of the
++  ducksteps icon so the artwork and the icon read as one picture: deep navy
++  space (#000d24), indigo sky (#17173d), the warm sunset (#fe6405 / #fefe9c),
++  and the silver of the swoosh (#c1c4c0).
++
++  Laid out for a 733x412 dialog. Everything that carries detail sits clear of
++  the text columns: the logo occupies x 40-232, the wordmark x 275-474, and
++  the copy runs x 273-703. The bright objects live in the corners those leave
++  empty, and a soft scrim holds the middle back.
++-->
++<svg xmlns="http://www.w3.org/2000/svg" width="733" height="412" viewBox="0 0 733 412">
++  <style>
++    /* Brightness tiers. These are declared outside the motion query on
++       purpose: a CSS animation outranks a normal declaration while it is
++       running, so the animations below win when motion is allowed, and these
++       are what is left when it is not. Without them the reduced-motion still
++       frame would render every glint at full opacity. */
++    .tw-a { opacity: 1 }
++    .tw-b { opacity: .72 }
++    .tw-c { opacity: .45 }
++    .pulse { opacity: 1 }
++
++    /* Same shape as toolkit loading.svg: motion is opt-out, and the still
++       frame has to stand on its own. */
++    @media not (prefers-reduced-motion) {
++      @keyframes twinkle-bright { 0%, 100% { opacity: 1 }   45% { opacity: .22 } }
++      @keyframes twinkle-mid    { 0%, 100% { opacity: .72 } 50% { opacity: .12 } }
++      @keyframes twinkle-faint  { 0%, 100% { opacity: .45 } 55% { opacity: .08 } }
++      /* The sparkle path is centred on its own origin and the default
++         transform-origin for SVG is 0 0, so this scales about the star. */
++      @keyframes flare          { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.3) } }
++
++      .tw-a { animation: twinkle-bright 4.4s ease-in-out infinite }
++      .tw-b { animation: twinkle-mid    5.8s ease-in-out infinite }
++      .tw-c { animation: twinkle-faint  7.1s ease-in-out infinite }
++      .flare { animation: flare 4.4s ease-in-out infinite }
++
++      /* The galaxy's core breathes, slower than the glints so the two
++         motions do not read as one blinking rhythm. */
++      @keyframes core-pulse { 0%, 100% { opacity: 1 } 50% { opacity: .4 } }
++      .pulse { animation: core-pulse 6.2s ease-in-out infinite }
++    }
++  </style>
++
++  <defs>
++    <!-- Four-point glint, matching the stars drawn inside the icon. -->
++    <path id="sp" d="M0,-1 C.14,-.32 .32,-.14 1,0 C.32,.14 .14,.32 0,1 C-.14,.32 -.32,.14 -1,0 C-.32,-.14 -.14,-.32 0,-1 Z" fill="#eaf2ff"/>
++
++    <linearGradient id="void" x1="0" y1="0" x2="1" y2="1">
++      <stop offset="0"   stop-color="#091230"/>
++      <stop offset=".45" stop-color="#050d20"/>
++      <stop offset="1"   stop-color="#01060f"/>
++    </linearGradient>
++
++    <radialGradient id="indigo"><stop offset="0" stop-color="#1b2e6b" stop-opacity=".85"/><stop offset="1" stop-color="#1b2e6b" stop-opacity="0"/></radialGradient>
++    <radialGradient id="dusk"><stop offset="0" stop-color="#6e2a1e" stop-opacity=".62"/><stop offset="1" stop-color="#6e2a1e" stop-opacity="0"/></radialGradient>
++    <radialGradient id="sunset"><stop offset="0" stop-color="#fe6405" stop-opacity=".38"/><stop offset=".55" stop-color="#c2490c" stop-opacity=".2"/><stop offset="1" stop-color="#c2490c" stop-opacity="0"/></radialGradient>
++    <radialGradient id="teal"><stop offset="0" stop-color="#0d3a5e" stop-opacity=".8"/><stop offset="1" stop-color="#0d3a5e" stop-opacity="0"/></radialGradient>
++    <radialGradient id="scrim"><stop offset="0" stop-color="#02070f" stop-opacity=".55"/><stop offset="1" stop-color="#02070f" stop-opacity="0"/></radialGradient>
++
++    <!-- Emission nebula. The warm stops are the icon's sunset, so the
++         right-hand side still carries the icon's colour without needing a
++         hard-edged object to carry it. -->
++    <radialGradient id="neb-warm"><stop offset="0" stop-color="#fe6405" stop-opacity=".46"/><stop offset=".6" stop-color="#c2490c" stop-opacity=".22"/><stop offset="1" stop-color="#c2490c" stop-opacity="0"/></radialGradient>
++    <radialGradient id="neb-hot"><stop offset="0" stop-color="#fefe9c" stop-opacity=".5"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>
++    <radialGradient id="neb-cool"><stop offset="0" stop-color="#2f4f9e" stop-opacity=".46"/><stop offset="1" stop-color="#2f4f9e" stop-opacity="0"/></radialGradient>
++    <radialGradient id="neb-dust"><stop offset="0" stop-color="#040a18" stop-opacity=".55"/><stop offset="1" stop-color="#040a18" stop-opacity="0"/></radialGradient>
++    <radialGradient id="neb-teal"><stop offset="0" stop-color="#1c6f9e" stop-opacity=".4"/><stop offset="1" stop-color="#1c6f9e" stop-opacity="0"/></radialGradient>
++    <radialGradient id="halo"><stop offset="0" stop-color="#ffb347" stop-opacity=".38"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>
++
++    <radialGradient id="core"><stop offset="0" stop-color="#fffbe8"/><stop offset=".4" stop-color="#ffd166" stop-opacity=".8"/><stop offset="1" stop-color="#f9a03f" stop-opacity="0"/></radialGradient>
++    <linearGradient id="arm" x1="0" y1="0" x2="1" y2="0">
++      <stop offset="0"  stop-color="#9fd8ff" stop-opacity="0"/>
++      <stop offset=".5" stop-color="#cfe4ff" stop-opacity=".55"/>
++      <stop offset="1"  stop-color="#9fd8ff" stop-opacity="0"/>
++    </linearGradient>
++
++    <linearGradient id="tail" x1="0" y1="0" x2="1" y2="0">
++      <stop offset="0"  stop-color="#ffffff" stop-opacity="0"/>
++      <stop offset=".7" stop-color="#dbe9ff" stop-opacity=".5"/>
++      <stop offset="1"  stop-color="#ffffff" stop-opacity=".95"/>
++    </linearGradient>
++
++    <!-- Head at the origin, tail running out along -x, so each comet is
++         placed with a translate + rotate. -->
++    <g id="comet">
++      <path d="M0,-4.6 Q-70,-2.6 -150,0 Q-70,2.6 0,4.6 Z" fill="url(#tail)"/>
++      <path d="M-6,0 L-168,0" stroke="url(#tail)" stroke-width="1" opacity=".7"/>
++      <circle r="9" fill="url(#halo)"/>
++      <circle r="3.1" fill="#ffffff"/>
++    </g>
++  </defs>
++
++  <!-- Deep space -->
++  <rect width="733" height="412" fill="url(#void)"/>
++
++  <!-- Nebulae. The sunset bloom sits under the icon so the warm half of the
++       artwork inside it spills out into the dialog rather than stopping dead
++       at the icon edge. -->
++  <ellipse cx="120" cy="30"  rx="330" ry="210" fill="url(#indigo)"/>
++  <ellipse cx="620" cy="70"  rx="200" ry="130" fill="url(#indigo)" opacity=".45"/>
++  <ellipse cx="24"  cy="248" rx="200" ry="190" fill="url(#dusk)"/>
++  <ellipse cx="100" cy="318" rx="300" ry="150" fill="url(#sunset)"/>
++  <ellipse cx="712" cy="340" rx="300" ry="230" fill="url(#teal)" opacity=".72"/>
++
++  <!-- Two wide arcs echoing the silver swoosh that wraps the icon. -->
++  <g fill="none" stroke="#cfd6e0" stroke-linecap="round">
++    <path d="M-40,300 C180,240 480,150 780,40" stroke-width="3" opacity=".05"/>
++    <path d="M-40,352 C200,300 520,205 780,96" stroke-width="2" opacity=".035"/>
++  </g>
++
++  <!-- Spiral galaxy, tucked into the gap above the icon -->
++  <g transform="translate(152,36) rotate(-22)" opacity=".62">
++    <ellipse rx="58" ry="21" fill="url(#core)" opacity=".28"/>
++    <g fill="none" stroke="url(#arm)" stroke-width="2.4" stroke-linecap="round">
++      <path d="M-52,-2 C-34,-15 -6,-16 10,-8"/>
++      <path d="M52,2 C34,15 6,16 -10,8"/>
++      <path d="M-40,7 C-24,16 4,17 18,10" stroke-width="1.4" opacity=".6"/>
++      <path d="M40,-7 C24,-16 -4,-17 -18,-10" stroke-width="1.4" opacity=".6"/>
++    </g>
++    <g class="pulse">
++      <ellipse rx="21" ry="11"  fill="url(#core)" opacity=".5"/>
++      <ellipse rx="11" ry="5.5" fill="url(#core)"/>
++    </g>
++    <g fill="#dbe9ff" opacity=".5">
++      <circle cx="-30" cy="-8" r=".9"/><circle cx="26" cy="9" r=".9"/>
++      <circle cx="-14" cy="9" r=".7"/><circle cx="18" cy="-9" r=".7"/>
++    </g>
++  </g>
++
++  <!-- Background stars -->
++  <g fill="#eaf2ff">
++    <circle cx="18"  cy="14"  r="1.1" opacity=".7"/>  <circle cx="62"  cy="46"  r=".8"  opacity=".5"/>
++    <circle cx="96"  cy="12"  r="1.3" opacity=".85"/> <circle cx="196" cy="54"  r=".9"  opacity=".45"/>
++    <circle cx="232" cy="20"  r="1.1" opacity=".65"/> <circle cx="258" cy="44"  r=".8"  opacity=".5"/>
++    <circle cx="300" cy="10"  r=".9"  opacity=".4"/>  <circle cx="352" cy="16"  r=".8"  opacity=".35"/>
++    <circle cx="408" cy="8"   r="1"   opacity=".45"/> <circle cx="466" cy="22"  r=".85" opacity=".4"/>
++    <circle cx="536" cy="14"  r=".9"  opacity=".5"/>  <circle cx="582" cy="8"   r="1"   opacity=".45"/>
++    <circle cx="662" cy="18"  r=".9"  opacity=".5"/>  <circle cx="704" cy="40"  r="1.2" opacity=".75"/>
++    <circle cx="724" cy="10"  r=".8"  opacity=".4"/>
++
++    <circle cx="10"  cy="88"  r="1"   opacity=".55"/> <circle cx="26"  cy="146" r=".8"  opacity=".4"/>
++    <circle cx="14"  cy="214" r="1.1" opacity=".6"/>  <circle cx="36"  cy="262" r=".9"  opacity=".45"/>
++    <circle cx="8"   cy="318" r="1"   opacity=".5"/>  <circle cx="252" cy="96"  r=".9"  opacity=".45"/>
++    <circle cx="264" cy="158" r=".8"  opacity=".35"/> <circle cx="246" cy="222" r="1"   opacity=".5"/>
++    <circle cx="258" cy="286" r=".85" opacity=".4"/>  <circle cx="96"  cy="304" r="1"   opacity=".55"/>
++    <circle cx="150" cy="282" r=".8"  opacity=".4"/>  <circle cx="196" cy="318" r=".9"  opacity=".45"/>
++    <circle cx="56"  cy="336" r="1.1" opacity=".5"/>
++
++    <circle cx="492" cy="104" r=".9"  opacity=".45"/> <circle cx="546" cy="132" r=".8"  opacity=".35"/>
++    <circle cx="614" cy="152" r="1"   opacity=".5"/>  <circle cx="676" cy="108" r=".9"  opacity=".45"/>
++    <circle cx="720" cy="152" r="1.1" opacity=".6"/>  <circle cx="504" cy="192" r=".8"  opacity=".3"/>
++    <circle cx="592" cy="214" r=".75" opacity=".28"/> <circle cx="668" cy="196" r=".85" opacity=".32"/>
++    <circle cx="722" cy="232" r="1"   opacity=".5"/>  <circle cx="510" cy="268" r=".8"  opacity=".3"/>
++    <circle cx="600" cy="286" r=".9"  opacity=".35"/> <circle cx="700" cy="272" r="1"   opacity=".45"/>
++    <circle cx="724" cy="312" r="1.1" opacity=".5"/>
++
++    <!-- Faint texture behind the copy; deliberately dimmer than the rest. -->
++    <circle cx="320" cy="168" r=".7" opacity=".22"/> <circle cx="388" cy="204" r=".7" opacity=".2"/>
++    <circle cx="452" cy="166" r=".7" opacity=".22"/> <circle cx="356" cy="246" r=".7" opacity=".18"/>
++    <circle cx="430" cy="274" r=".7" opacity=".2"/>  <circle cx="286" cy="202" r=".7" opacity=".2"/>
++
++    <circle cx="30"  cy="376" r="1"   opacity=".45"/> <circle cx="112" cy="352" r=".85" opacity=".35"/>
++    <circle cx="170" cy="392" r=".9"  opacity=".4"/>  <circle cx="250" cy="344" r=".8"  opacity=".3"/>
++    <circle cx="300" cy="398" r=".85" opacity=".3"/>  <circle cx="420" cy="340" r=".8"  opacity=".28"/>
++    <circle cx="500" cy="396" r=".9"  opacity=".32"/> <circle cx="566" cy="346" r=".85" opacity=".3"/>
++    <circle cx="640" cy="404" r="1"   opacity=".4"/>  <circle cx="712" cy="368" r="1.1" opacity=".45"/>
++  </g>
++
++  <!-- Comets -->
++  <g opacity=".8"><use href="#comet" transform="translate(222,274) rotate(-16.5)"/></g>
++  <g opacity=".55"><use href="#comet" transform="translate(716,126) rotate(-15.1) scale(.92)"/></g>
++  <g opacity=".4"><use href="#comet" transform="translate(676,356) rotate(-19) scale(.55)"/></g>
++
++  <!-- Hold the middle back so the copy keeps its contrast. -->
++  <ellipse cx="470" cy="205" rx="330" ry="170" fill="url(#scrim)"/>
++
++  <!-- Emission nebula. Built from overlapping lobes rather than one ellipse:
++       a single smooth outline reads as a disc or a lens, and the whole point
++       of this object is that it has no edge to resolve. The dust is a soft
++       radial smudge for the same reason - a stroked path reads as a drawn
++       bar, not as cloud. -->
++  <g transform="translate(606,72) scale(1.1)">
++    <!-- Cool outer haze -->
++    <ellipse rx="62" ry="38" transform="translate(-30,4)  rotate(-14)" fill="url(#neb-cool)"/>
++    <ellipse rx="52" ry="30" transform="translate(34,-10) rotate(16)"  fill="url(#neb-cool)"/>
++    <ellipse rx="34" ry="26" transform="translate(6,22)   rotate(-6)"  fill="url(#neb-teal)"/>
++    <ellipse rx="30" ry="20" transform="translate(58,14)  rotate(8)"   fill="url(#neb-teal)"/>
++    <ellipse rx="26" ry="18" transform="translate(-58,-8) rotate(-24)" fill="url(#neb-cool)"/>
++
++    <!-- Warm body: the icon's sunset, carried to this side of the dialog -->
++    <ellipse rx="46" ry="30" transform="translate(-18,-2) rotate(-18)" fill="url(#neb-warm)"/>
++    <ellipse rx="44" ry="30" transform="translate(20,8)   rotate(10)"  fill="url(#neb-warm)"/>
++    <ellipse rx="32" ry="22" transform="translate(-42,-14) rotate(-30)" fill="url(#neb-warm)"/>
++    <ellipse rx="26" ry="18" transform="translate(38,-18) rotate(24)"  fill="url(#neb-warm)"/>
++
++    <!-- Dust -->
++    <ellipse rx="38" ry="8"  transform="translate(-4,14)  rotate(-9)"  fill="url(#neb-dust)"/>
++    <ellipse rx="22" ry="6"  transform="translate(28,-16) rotate(14)"  fill="url(#neb-dust)" opacity=".7"/>
++
++    <!-- Hot centre, where the young cluster sits -->
++    <ellipse rx="22" ry="15" transform="translate(-12,-2) rotate(-12)" fill="url(#neb-hot)"/>
++    <ellipse rx="11" ry="8"  transform="translate(12,4)"               fill="url(#neb-hot)" opacity=".65"/>
++
++    <g fill="#f4f8ff">
++      <circle cx="-12" cy="-4"  r="1.8" opacity=".95"/>
++      <circle cx="-2"  cy="3"   r="1.2" opacity=".8"/>
++      <circle cx="12"  cy="4"   r="1.4" opacity=".85"/>
++      <circle cx="-26" cy="6"   r="1.1" opacity=".7"/>
++      <circle cx="24"  cy="-12" r="1.2" opacity=".75"/>
++      <circle cx="-42" cy="-12" r=".9"  opacity=".6"/>
++      <circle cx="44"  cy="8"   r=".9"  opacity=".5"/>
++      <circle cx="2"   cy="-16" r="1"   opacity=".65"/>
++    </g>
++  </g>
++
++  <!-- Twinkling glints -->
++  <g transform="translate(72,66) scale(7.5)" class="tw-a" style="animation-delay:-.4s"><use href="#sp" class="flare" style="animation-delay:-.4s"/></g>
++  <g transform="translate(498,40) scale(5.5)" class="tw-a" style="animation-delay:-2.9s;animation-duration:5.2s"><use href="#sp" class="flare" style="animation-delay:-2.9s;animation-duration:5.2s"/></g>
++  <g transform="translate(700,92) scale(6)" class="tw-b" style="animation-delay:-1.6s"><use href="#sp" class="flare" style="animation-delay:-1.6s;animation-duration:5.8s"/></g>
++  <g transform="translate(236,330) scale(6.5)" class="tw-b" style="animation-delay:-4.1s;animation-duration:6.4s"><use href="#sp" class="flare" style="animation-delay:-4.1s;animation-duration:6.4s"/></g>
++  <g transform="translate(556,300) scale(5.5)" class="tw-c" style="animation-delay:-3.3s"><use href="#sp"/></g>
++  <g transform="translate(30,250) scale(6)" class="tw-b" style="animation-delay:-5.2s;animation-duration:6.9s"><use href="#sp"/></g>
++
++  <use href="#sp" class="tw-b" transform="translate(140,12)  scale(4)"   style="animation-delay:-2.2s"/>
++  <use href="#sp" class="tw-c" transform="translate(256,84)  scale(3.2)" style="animation-delay:-4.7s"/>
++  <use href="#sp" class="tw-c" transform="translate(486,88)  scale(3.2)" style="animation-delay:-1.1s;animation-duration:6.2s"/>
++  <use href="#sp" class="tw-b" transform="translate(612,176) scale(4)"   style="animation-delay:-3.8s"/>
++  <use href="#sp" class="tw-c" transform="translate(94,344)  scale(4.2)" style="animation-delay:-.9s"/>
++  <use href="#sp" class="tw-c" transform="translate(392,320) scale(3.4)" style="animation-delay:-5.6s"/>
++  <use href="#sp" class="tw-b" transform="translate(724,208) scale(4.5)" style="animation-delay:-2.6s;animation-duration:6.6s"/>
++  <use href="#sp" class="tw-c" transform="translate(10,174)  scale(3.6)" style="animation-delay:-6.2s"/>
++  <use href="#sp" class="tw-c" transform="translate(330,24)  scale(3)"   style="animation-delay:-3.1s"/>
++  <use href="#sp" class="tw-c" transform="translate(662,340) scale(3.8)" style="animation-delay:-4.4s"/>
++  <use href="#sp" class="tw-c" transform="translate(252,130) scale(3.2)" style="animation-delay:-1.9s"/>
++</svg>
+diff --git a/browser/branding/ducksteps/content/aboutDialog.css b/browser/branding/ducksteps/content/aboutDialog.css
+index fe99cf028e3d..00cf03e83157 100644
+--- a/browser/branding/ducksteps/content/aboutDialog.css
++++ b/browser/branding/ducksteps/content/aboutDialog.css
+@@ -4,13 +4,22 @@
+ 
+ @media not ((prefers-contrast) and (prefers-color-scheme: light)) {
+   #aboutDialogContainer {
+-    background-color: #20123a;
++    /* about-background.svg is drawn from the icon's own palette, so the icon
++       stops sitting on a flat field and starts sitting in a picture. The
++       colour underneath it is the artwork's deepest navy, so a dialog painted
++       before the image decodes looks like the artwork rather than like white. */
++    background-color: #040b1a;
++    background-image: url("chrome://branding/content/about-background.svg");
++    background-repeat: no-repeat;
++    background-position: center;
++    background-size: cover;
+     color: #fff;
+     color-scheme: dark;
+   }
+ 
+   #bottomBox {
+-    background-color: hsla(235, 43%, 10%, 0.5);
++    /* Navy rather than upstream's indigo, to match the artwork behind it. */
++    background-color: rgba(1, 7, 18, 0.55);
+   }
+ 
+   #trademark {
+diff --git a/browser/branding/ducksteps/content/jar.mn b/browser/branding/ducksteps/content/jar.mn
+index e4894296d99d..11be99995c01 100644
+--- a/browser/branding/ducksteps/content/jar.mn
++++ b/browser/branding/ducksteps/content/jar.mn
+@@ -5,6 +5,7 @@
+ browser.jar:
+ % content branding %content/branding/ contentaccessible=yes
+   content/branding/about.png
++  content/branding/about-background.svg
+   content/branding/about-logo.png
+   content/branding/about-logo.svg
+   content/branding/about-logo@2x.png
+-- 
+2.52.0.windows.1
+

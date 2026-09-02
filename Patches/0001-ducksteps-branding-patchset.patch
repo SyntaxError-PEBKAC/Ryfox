@@ -1,7 +1,7 @@
-From 63284f92ffaefe56e3df0b847dc32ff43981d483 Mon Sep 17 00:00:00 2001
+From a8578b57d60e1b5bbc21aa10a1e26a281d25a18b Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Fri, 13 Feb 2026 12:50:10 -0700
-Subject: [PATCH 01/17] ducksteps: branding + patchset
+Subject: [PATCH 01/22] ducksteps: branding + patchset
 
 ---
  browser/app/application.ini                   |   8 ++

@@ -1,0 +1,72 @@
+From 6b2fab0747aac760b052de3a3586f67b06c8acb0 Mon Sep 17 00:00:00 2001
+From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
+Date: Mon, 31 Aug 2026 15:06:07 -0700
+Subject: [PATCH 19/22] ducksteps: enlarge and reposition the About dialog
+ wordmark
+
+The wordmark sat small and marooned near the top of the dialog, with a
+gap of roughly 52px between it and "Extended Support Release".
+
+The cause is inside the asset. about-wordmark.svg is a 359x80 canvas but
+the glyphs only occupy x 2-236, y 13-71 of it - a third of the width is
+empty. So background-size: auto 44px sized the canvas to 197x44 while
+the visible word came out at just 130x32, and background-position: 0 0
+pinned it against the top edge with the canvas's own 7px of slack above.
+
+Sizing to 68px puts the visible word at 199x49, and offsetting it 16px
+down closes the gap to about 23px, which groups it with the text block
+underneath instead of leaving it stranded. padding-top grows to match,
+so nothing below it moves up into the wordmark. Net effect on the dialog
+is roughly 18px taller.
+
+The base sheet sets background-position wholesale for RTL:
+
+    &:-moz-locale-dir(rtl) {
+      background-position: 100% 0;
+    }
+
+which has the same specificity as our rule and would have discarded the
+vertical offset, so that case is mirrored here.
+
+Note this does not fix the horizontal half of the same problem: under
+RTL the canvas is right-aligned, which leaves the word about 105px shy
+of the edge because of that unused canvas. Tightening the SVG's viewBox
+to its ink would fix it properly and make these numbers mean what they
+say, but that is an asset change for another commit.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+---
+ .../branding/ducksteps/content/aboutDialog.css   | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/browser/branding/ducksteps/content/aboutDialog.css b/browser/branding/ducksteps/content/aboutDialog.css
+index 4413027a5bba..fe99cf028e3d 100644
+--- a/browser/branding/ducksteps/content/aboutDialog.css
++++ b/browser/branding/ducksteps/content/aboutDialog.css
+@@ -19,9 +19,21 @@
+ }
+ 
+ #rightBox {
+-  background-size: auto 44px;
++  /* The wordmark is drawn into a 359x80 canvas but its ink spans only
++     x 2-236, y 13-71 of it, so these numbers are all larger than the word
++     they produce: at 68px the visible "ducksteps" is 199x49.
++     background-position drops it clear of the top edge, and padding-top
++     reserves the wordmark's height plus the gap beneath it. */
++  background-size: auto 68px;
++  background-position: 0 16px;
+   margin-inline: 30px;
+-  padding-top: 76px;
++  padding-top: 94px;
++
++  /* The base sheet resets the position wholesale for RTL, which would
++     otherwise throw away the vertical offset above. */
++  &:-moz-locale-dir(rtl) {
++    background-position: 100% 16px;
++  }
+ }
+ 
+ #bottomBox {
+-- 
+2.52.0.windows.1
+

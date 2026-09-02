@@ -1,7 +1,7 @@
-From 8b96308db3a723d207d567dea4e7d3d1fa351690 Mon Sep 17 00:00:00 2001
+From 7a2d502faad9fdd0602ad90ac35a83e385ea85f9 Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Tue, 5 May 2026 19:37:21 -0700
-Subject: [PATCH 07/17] ducksteps PGO: fullscreen video, airbnb popup fix,
+Subject: [PATCH 07/22] ducksteps PGO: fullscreen video, airbnb popup fix,
  librespeed retry, speedometer dwell bump, duck.ai submit fix
 
 ---

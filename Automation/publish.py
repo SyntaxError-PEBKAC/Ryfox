@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+from fnmatch import fnmatch
 from pathlib import Path
 
 import common
@@ -32,6 +33,10 @@ _AUTOMATION_SYNC_GLOBS = ("*.py", "*.md", "*.ps1", "config.toml", ".gitignore")
 _AUTOMATION_NEVER_SYNC = frozenset({".env", "state.json"})
 _AUTOMATION_NEVER_SYNC_SUFFIXES = (".key", ".lock", ".log", ".png", ".pyc")
 
+# Hand-written for the published directory, with no counterpart in the automation folder,
+# so the prune in sync_automation would otherwise delete it on the next publish.
+_AUTOMATION_KEEP = frozenset({"README.md"})
+
 
 class PublishError(Exception):
     pass
@@ -60,6 +65,32 @@ def sync_automation(repo_dir, automation_dir, logger=None) -> list:
         dst = destination / src.name
         dst.write_bytes(src.read_bytes())
         synced.append(dst)
+
+    # Prune. This used to only ever copy, so anything renamed or deleted upstream stayed
+    # published forever: _finish_publish_153_1_0.py, a one-off from the 153.1.0 manual
+    # recovery, outlived the automation folder it came from and sat in the public repo
+    # making a liar out of Automation/README.md ("what is in this directory is what built
+    # the newest release").
+    #
+    # Only files this function could itself have written are eligible - a name matching one
+    # of the sync globs, minus the explicit keep list - so anything hand-added to the
+    # published directory outside those patterns is untouched. Names on the never-sync list
+    # are swept too, regardless of the globs: if a .env or a state.json ever reaches the
+    # public repo, the next publish should take it back out rather than preserve it.
+    synced_names = {p.name for p in synced}
+    for existing in sorted(destination.iterdir()):
+        if not existing.is_file() or existing.name in synced_names:
+            continue
+        secret = (existing.name in _AUTOMATION_NEVER_SYNC
+                  or existing.name.endswith(_AUTOMATION_NEVER_SYNC_SUFFIXES))
+        stale = (existing.name not in _AUTOMATION_KEEP
+                 and any(fnmatch(existing.name, g) for g in _AUTOMATION_SYNC_GLOBS))
+        if not (secret or stale):
+            continue
+        existing.unlink()
+        if logger:
+            logger.warning("pruned %s from %s (%s)", existing.name, destination,
+                           "must never be published" if secret else "no longer in " + str(automation_dir))
 
     if logger:
         logger.info("synced %d automation file(s) to %s", len(synced), destination)
@@ -135,14 +166,16 @@ These are the commits that turn a stock Firefox ESR checkout into ducksteps: exp
 To use them: clone [mozilla-firefox/firefox](https://github.com/mozilla-firefox/firefox), check out the matching ESR branch/tag, then apply in order:
 
 ```bash
-git am {example_range}
+git am --keep-cr {example_range}
 ```
 
 or all at once:
 
 ```bash
-git am Patches/*.patch
+git am --keep-cr Patches/*.patch
 ```
+
+`--keep-cr` is required, not optional. Some of these patches touch files that are CRLF in the Firefox tree (`tools/upx-after-package.ps1`, the PGO extension sources), so their context and content lines carry carriage returns. `git am` strips trailing CRs by default, which corrupts those lines and makes the patch fail to apply.
 
 Numbered in the order they were originally committed:
 
@@ -240,7 +273,10 @@ def prepend_changelog(repo_dir, changelog_entry_text, logger=None) -> Path:
         new_content = header.rstrip("\n") + "\n\n" + entry + "\n"
     else:
         new_content = entry + "\n"
-    changelog_path.write_text(new_content, encoding="utf-8")
+    # LF explicitly, matching regenerate_patches_readme above. The docs repo stores this
+    # file with LF regardless, so writing CRLF here only meant git normalized it back on
+    # every commit - and left the working copy disagreeing with the committed form.
+    changelog_path.write_text(new_content, encoding="utf-8", newline="\n")
     if logger:
         logger.info("prepended changelog entry to %s", changelog_path)
     return changelog_path
@@ -366,32 +402,13 @@ def recent_release_titles(repo_slug, limit=2, logger=None) -> list:
     return titles
 
 
-# --- One-time cleanup sweep: em dashes, CVE bullet format, emoji spacing ---
-# Idempotent by construction: every pattern below only matches the OLD shape (unbolded ID,
-# dash separator, double space after emoji, bold-in-changelog-context). An already-swept
-# line doesn't match and passes through unchanged, so re-running this is always safe.
+# --- Cleanup sweep: em dashes, emoji spacing, changelog header shape ---
+# Idempotent by construction: every pattern below only matches the OLD shape (em dash
+# separator in the changelog header, double space after emoji). An already-swept line
+# doesn't match and passes through unchanged, so re-running this is always safe.
 
 _EMOJI_DOUBLE_SPACE = re.compile(r"(🔄|🛡️|✅|🚨|🌐|🏞️|💾|🚄|🐞|🪨|🗜️|💯|⛐|🤷🏽‍♂️)[ \t]{2,}")
-_CVE_BULLET = re.compile(r"^-\s*(?:\[(CVE-\d{4}-\d+)\]\(([^)]+)\)|(CVE-\d{4}-\d+))\s*[—–-]\s*(.+)$")
 _CHANGELOG_HEADER = re.compile(r"^## \[([^\]]+)\]\s*[—–]\s*(.+)$", re.MULTILINE)
-_BOLD_SEVERITY_HEADER = re.compile(r"^\*\*(Critical|High|Moderate|Low) severity:\*\*\s*$", re.MULTILINE)
-
-
-def convert_cve_bullet_to_format_a(line: str) -> str:
-    """Handles both shapes seen in real historical documents: the changelog's
-    already-linked-but-unbolded bullets, and the release bodies' bare-CVE-ID (no link at
-    all) bullets. Any trailing text after the separator (including Tim's own editorial
-    asides like "(public exploit code exists)") is preserved, just moved after the bold ID
-    instead of being dash-separated - Format A has no dedicated slot for such asides, and
-    dropping Tim's own commentary silently felt like the wrong call to make unilaterally.
-    """
-    match = _CVE_BULLET.match(line.strip())
-    if not match:
-        return line
-    linked_id, url, bare_id, rest = match.groups()
-    cve_id = linked_id or bare_id
-    url = url or f"https://www.cve.org/CVERecord?id={cve_id}"
-    return f"- **[{cve_id}]({url})** {rest.strip()}"
 
 
 def normalize_changelog_header(text: str) -> str:
@@ -404,17 +421,14 @@ def normalize_emoji_spacing(text: str) -> str:
     return _EMOJI_DOUBLE_SPACE.sub(r"\1 ", text)
 
 
-def unbold_severity_headers(text: str) -> str:
-    return _BOLD_SEVERITY_HEADER.sub(r"\1 severity:", text)
-
-
 _MARKDOWN_LINK = re.compile(r"\[([^\]]*)\]\(([^)]*)\)")
 _BARE_CVE = re.compile(r"CVE-(\d{4})-(\d+)(?:/(\d+))?")
 
 
 def link_bare_cve_mentions(text: str) -> str:
-    """Some older release bodies (pre-140.11.0) mention CVEs inline in prose instead of as
-    bullets - convert_cve_bullet_to_format_a never sees these, so they'd stay unlinked.
+    """Release notes no longer carry a CVE bullet list at all, so an inline prose mention is
+    now the only way a CVE ID can reach a published document - from the drafted summary,
+    which is told not to name one but is free text, or from a hand-written extra section.
     Also handles the "CVE-2026-6748/6751" shorthand seen in 140.10.0 (two CVEs, same year,
     slash-separated) by linking both.
 
@@ -450,22 +464,18 @@ def link_bare_cve_mentions(text: str) -> str:
 
 
 def sweep_changelog_entry(text: str) -> str:
-    """Changelog target: plain (non-bold) severity headers, per Phase 6's spec."""
+    """Differs from the release-body sweep only in the "## [X] - date" header, which the
+    changelog has and the release body does not. The per-CVE-bullet and severity-header
+    passes are gone along with the CVE list itself; link_bare_cve_mentions stays as the net
+    under a CVE named inline in prose, which the drafted summary is told not to do but can."""
     text = normalize_changelog_header(text)
-    lines = [convert_cve_bullet_to_format_a(line) for line in text.splitlines()]
-    text = "\n".join(lines)
     text = link_bare_cve_mentions(text)
     text = common.strip_em_dashes(text)
     text = normalize_emoji_spacing(text)
-    text = unbold_severity_headers(text)
     return text if text.endswith("\n") else text + "\n"
 
 
 def sweep_release_body(text: str) -> str:
-    """Release body target: bold severity headers (already the case in every real body
-    checked) - so this is identical to the changelog sweep minus the unbolding step."""
-    lines = [convert_cve_bullet_to_format_a(line) for line in text.splitlines()]
-    text = "\n".join(lines)
     text = link_bare_cve_mentions(text)
     text = common.strip_em_dashes(text)
     text = normalize_emoji_spacing(text)

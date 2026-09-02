@@ -1,7 +1,7 @@
-From dffbcfb7793756182dbd436be6c2855ae1f34e98 Mon Sep 17 00:00:00 2001
+From c01f8ab8800bdeacb6a835ddb4a1c9a49e660ec9 Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Sat, 15 Aug 2026 19:17:36 -0700
-Subject: [PATCH 13/17] ducksteps: telemetry prompts name Mozilla, not the
+Subject: [PATCH 13/22] ducksteps: telemetry prompts name Mozilla, not the
  maintainer
 
 -vendor-short-name was set to SyntaxError-PEBKAC, but Firefox does not

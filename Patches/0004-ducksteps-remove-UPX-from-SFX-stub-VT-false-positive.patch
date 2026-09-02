@@ -1,7 +1,7 @@
-From 34cabb50cdfb5a0ec61463dde9d00b638f879232 Mon Sep 17 00:00:00 2001
+From cca1556243365490b83e6f59e1060d259959fecf Mon Sep 17 00:00:00 2001
 From: Tim <107831991+SyntaxError-PEBKAC@users.noreply.github.com>
 Date: Wed, 29 Apr 2026 17:36:56 -0700
-Subject: [PATCH 04/17] ducksteps: remove UPX from SFX stub (VT false positive
+Subject: [PATCH 04/22] ducksteps: remove UPX from SFX stub (VT false positive
  fix)
 
 ---

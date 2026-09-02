@@ -909,10 +909,10 @@ def phase_advisory(ctx):
     # absolute, and two sources bypass every other guard: the claude -p summary (free text,
     # and it does reach for em dashes), and ducksteps_changes, which is raw git commit
     # subjects - "ducksteps PGO: corpus updates - duckai behavior..." carried one straight
-    # into a published release body. advisory.py only strips CVE titles, and the sweep
-    # helpers were only ever pointed at old files. The sweeps are idempotent by
-    # construction (each pattern matches only the pre-sweep shape), so running them here
-    # costs nothing and closes the hole at the last point before anything is written.
+    # into a published release body. The sweep helpers were only ever pointed at old files
+    # before this. The sweeps are idempotent by construction (each pattern matches only the
+    # pre-sweep shape), so running them here costs nothing and closes the hole at the last
+    # point before anything is written.
     ctx.build["release_notes"] = publish.sweep_release_body(render.render_release_notes(data))
     ctx.build["changelog_entry"] = publish.sweep_changelog_entry(render.render_changelog_entry(data))
     ctx.build["release_title"] = f'⛐ It\'s the "{data.title}" release!'
@@ -942,7 +942,10 @@ def phase_draft(ctx):
         artifact_paths.append(variant_artifacts["standalone_7z"])
 
     notes_path = _release_dir(ctx) / "release_notes.md"
-    notes_path.write_text(ctx.build["release_notes"], encoding="utf-8")
+    # LF explicitly, not the platform default. This file IS the published release body -
+    # gh reads it straight into the release via --notes-file - so its line endings should
+    # not depend on which machine happened to run the build.
+    notes_path.write_text(ctx.build["release_notes"], encoding="utf-8", newline="\n")
 
     repo_slug = ctx.config["publish"]["repo_slug"]
     draft_url = publish.create_draft_release(
