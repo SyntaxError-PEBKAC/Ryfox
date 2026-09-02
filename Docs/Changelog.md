@@ -10,13 +10,15 @@ All releases of ducksteps. Newest first.
 
 🔄 Updated to Firefox ESR 153.2.0.
 
-ducksteps specific changes:
+🔧 Started tracking build files that were never committed.
 
-- Now tracking additional build files that were never committed.
-- Fade the logo's edges instead of cutting it off square.
-- Replaced the About dialog's flat purple with a space-themed backdrop.
-- Enlarged and repositioned the About dialog wordmark.
-- PGO changes: drop old.reddit.com, fix LibreSpeed self-abort.
+🏞️ Faded the logo's edges instead of cutting it off square.
+
+🌌 Replaced the About dialog's flat purple with a space-themed backdrop.
+
+📐 Enlarged and repositioned the About dialog wordmark.
+
+🧠 Updated the PGO training corpus: dropped old.reddit.com, fixed the LibreSpeed self-abort.
 
 🛡️ Addressed 24 CVEs from [Mozilla Foundation Security Advisory 2026-85](https://www.mozilla.org/en-US/security/advisories/mfsa2026-85/) (September 01, 2026). This round patches twenty-four CVEs (12 high, 5 moderate, 7 low severity).
 
